@@ -22,4 +22,32 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
     ];
+
+    protected static function booted(): void
+    {
+        static::updated(function (self $user): void {
+            if ($user->wasChanged('role')) {
+                $user->tokens()->delete();
+            }
+        });
+    }
+
+    public function tokenAbilities(): array
+    {
+        $abilities = [
+            'profile:read',
+            'profile:write',
+            'media:read',
+            'media:write',
+            'contact:read',
+            'contact:write',
+        ];
+
+        return match ($this->role) {
+            'player' => array_merge($abilities, ['player', 'application:apply', 'application:outgoing']),
+            'team' => array_merge($abilities, ['team', 'opportunity:write', 'application:incoming']),
+            'manager', 'coach', 'scout' => array_merge($abilities, ['staff']),
+            default => $abilities,
+        };
+    }
 }

@@ -96,3 +96,22 @@ Windows'ta php.ini kullanarak test kosma (mbstring dahil):
 $env:PHPRC='C:\Users\Hp\PhpstormProjects\untitled'; php artisan test
 ```
 
+Security komutlari:
+
+```bash
+# Legacy wildcard tokenlari listeler (silmez)
+php artisan security:revoke-legacy-tokens --dry-run
+
+# Legacy wildcard tokenlari siler
+php artisan security:revoke-legacy-tokens
+```
+
+Not: Bu komut her gun 03:00'te scheduler ile otomatik calisir.
+
+CI guvenlik kontrolleri:
+
+- `.github/workflows/security.yml`
+- Composer dependency audit (`composer audit`)
+- Secret scan (`gitleaks`)
+- `.github/workflows/codeql.yml` (CodeQL PHP analizi)
+- `.github/workflows/tests.yml` icinde Pint style check

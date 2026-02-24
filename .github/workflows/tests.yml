@@ -1,6 +1,7 @@
 name: Tests
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -42,6 +43,9 @@ jobs:
 
       - name: Generate app key
         run: php artisan key:generate
+
+      - name: Check code style (Pint)
+        run: ./vendor/bin/pint --test
 
       - name: Execute tests
         run: php artisan test
