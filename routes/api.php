@@ -17,6 +17,10 @@ Route::prefix('auth')->group(function () {
 
     Route::middleware(['auth:sanctum', 'reject_legacy_token', 'throttle:api'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/refresh', [AuthController::class, 'refresh'])->middleware('ability:profile:write');
+        Route::get('/sessions', [AuthController::class, 'sessions'])->middleware('ability:profile:read');
+        Route::delete('/sessions', [AuthController::class, 'logoutAll'])->middleware('ability:profile:write');
+        Route::delete('/sessions/{tokenId}', [AuthController::class, 'revokeSession'])->middleware('ability:profile:write');
         Route::get('/me', [AuthController::class, 'me']);
         Route::put('/me', [AuthController::class, 'updateMe']);
     });

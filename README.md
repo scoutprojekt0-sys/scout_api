@@ -108,6 +108,13 @@ php artisan security:revoke-legacy-tokens
 
 Not: Bu komut her gun 03:00'te scheduler ile otomatik calisir.
 
+Auth session endpointleri:
+
+- `GET /api/auth/sessions` aktif oturumlar
+- `POST /api/auth/refresh` mevcut tokeni yeniler (token rotation)
+- `DELETE /api/auth/sessions/{tokenId}` secili cihazi kapatir
+- `DELETE /api/auth/sessions` mevcut cihaz haric tum oturumlari kapatir
+
 CI guvenlik kontrolleri:
 
 - `.github/workflows/security.yml`
@@ -115,3 +122,4 @@ CI guvenlik kontrolleri:
 - Secret scan (`gitleaks`)
 - `.github/workflows/codeql.yml` (CodeQL PHP analizi)
 - `.github/workflows/tests.yml` icinde Pint style check
+- `.github/workflows/api-smoke.yml` icinde Newman Postman E2E

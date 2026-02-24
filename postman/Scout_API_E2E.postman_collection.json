@@ -35,6 +35,21 @@
     },
     {
       "name": "Auth - Login Team",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "  const json = pm.response.json();",
+              "  if (json?.data?.token) pm.collectionVariables.set('team_token', json.data.token);",
+              "  if (json?.data?.user?.id) pm.collectionVariables.set('team_user_id', String(json.data.user.id));",
+              "}"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -49,6 +64,20 @@
     },
     {
       "name": "Opportunity - Create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "  const json = pm.response.json();",
+              "  if (json?.data?.id) pm.collectionVariables.set('opportunity_id', String(json.data.id));",
+              "}"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -64,6 +93,21 @@
     },
     {
       "name": "Auth - Login Player",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "  const json = pm.response.json();",
+              "  if (json?.data?.token) pm.collectionVariables.set('player_token', json.data.token);",
+              "  if (json?.data?.user?.id) pm.collectionVariables.set('player_user_id', String(json.data.user.id));",
+              "}"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -93,12 +137,97 @@
     },
     {
       "name": "Application - Incoming (Team)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "  const json = pm.response.json();",
+              "  const first = json?.data?.data?.[0];",
+              "  if (first?.id) pm.collectionVariables.set('application_id', String(first.id));",
+              "}"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [
           { "key": "Authorization", "value": "Bearer {{team_token}}" }
         ],
         "url": "{{base_url}}/api/applications/incoming"
+      }
+    },
+    {
+      "name": "Auth - Sessions (Player)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "  const json = pm.response.json();",
+              "  const sessions = Array.isArray(json?.data) ? json.data : [];",
+              "  const revokable = sessions.find(s => s && s.is_current === false);",
+              "  if (revokable?.id) pm.collectionVariables.set('session_token_id', String(revokable.id));",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{player_token}}" }
+        ],
+        "url": "{{base_url}}/api/auth/sessions"
+      }
+    },
+    {
+      "name": "Auth - Refresh Player Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "  const json = pm.response.json();",
+              "  if (json?.data?.token) pm.collectionVariables.set('player_token', json.data.token);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{player_token}}" }
+        ],
+        "url": "{{base_url}}/api/auth/refresh"
+      }
+    },
+    {
+      "name": "Auth - Revoke Session By ID (Player)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{player_token}}" }
+        ],
+        "url": "{{base_url}}/api/auth/sessions/{{session_token_id}}"
+      }
+    },
+    {
+      "name": "Auth - Logout Other Sessions (Player)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{player_token}}" }
+        ],
+        "url": "{{base_url}}/api/auth/sessions"
       }
     },
     {
@@ -172,8 +301,10 @@
     { "key": "team_token", "value": "" },
     { "key": "player_token", "value": "" },
     { "key": "team_user_id", "value": "1" },
+    { "key": "player_user_id", "value": "2" },
     { "key": "opportunity_id", "value": "1" },
     { "key": "application_id", "value": "1" },
+    { "key": "session_token_id", "value": "" },
     { "key": "media_file_path", "value": "C:/tmp/sample.jpg" }
   ]
 }

@@ -132,6 +132,35 @@ class AuthController extends Controller
         ]);
     }
 
+    public function sessions(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $currentTokenId = $user->currentAccessToken()?->id;
+
+        $sessions = $user->tokens()
+            ->orderByDesc('id')
+            ->get(['id', 'name', 'abilities', 'last_used_at', 'expires_at', 'created_at'])
+            ->map(function ($token) use ($currentTokenId) {
+                $abilities = is_array($token->abilities) ? $token->abilities : [];
+
+                return [
+                    'id' => $token->id,
+                    'name' => $token->name,
+                    'is_current' => (int) $token->id === (int) $currentTokenId,
+                    'abilities' => $abilities,
+                    'last_used_at' => optional($token->last_used_at)?->toISOString(),
+                    'expires_at' => optional($token->expires_at)?->toISOString(),
+                    'created_at' => optional($token->created_at)?->toISOString(),
+                ];
+            })->values();
+
+        return response()->json([
+            'ok' => true,
+            'data' => $sessions,
+        ]);
+    }
+
     public function updateMe(UpdateMeRequest $request): JsonResponse
     {
         /** @var User $user */
@@ -154,6 +183,95 @@ class AuthController extends Controller
             'ok' => true,
             'message' => 'Profil guncellendi.',
             'data' => $user->fresh(),
+        ]);
+    }
+
+    public function refresh(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $currentToken = $user->currentAccessToken();
+
+        [$token, $expiresAt] = $this->issueToken($user);
+
+        $currentToken?->delete();
+
+        Log::channel('security')->info('Token refreshed', [
+            'user_id' => $user->id,
+            'ip' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Oturum yenilendi.',
+            'data' => [
+                'token' => $token,
+                'expires_at' => $expiresAt,
+            ],
+        ]);
+    }
+
+    public function logoutAll(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $currentTokenId = $user->currentAccessToken()?->id;
+
+        $query = $user->tokens();
+        if ($currentTokenId !== null) {
+            $query->where('id', '!=', $currentTokenId);
+        }
+
+        $revoked = $query->count();
+        $query->delete();
+
+        Log::channel('security')->info('All sessions revoked except current', [
+            'user_id' => $user->id,
+            'revoked_count' => $revoked,
+            'ip' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Diger tum cihazlardan cikis yapildi.',
+            'data' => [
+                'revoked_count' => $revoked,
+            ],
+        ]);
+    }
+
+    public function revokeSession(Request $request, int $tokenId): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $currentTokenId = $user->currentAccessToken()?->id;
+
+        if ($currentTokenId !== null && (int) $tokenId === (int) $currentTokenId) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Mevcut oturumu bu endpoint ile kapatamazsiniz. Logout kullanin.',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $token = $user->tokens()->where('id', $tokenId)->first();
+        if (!$token) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Oturum bulunamadi.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        $token->delete();
+
+        Log::channel('security')->info('Session revoked', [
+            'user_id' => $user->id,
+            'token_id' => $tokenId,
+            'ip' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Oturum sonlandirildi.',
         ]);
     }
 
