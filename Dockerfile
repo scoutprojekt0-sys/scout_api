@@ -17,9 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     libpq-dev \
     libsqlite3-dev \
-    libzip-dev \
-    libicu-dev \
-    && docker-php-ext-install pdo pdo_pgsql pdo_sqlite mbstring bcmath intl zip \
+    && docker-php-ext-install pdo pdo_pgsql pdo_sqlite mbstring bcmath \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=vendor /app/vendor /var/www/html/vendor
