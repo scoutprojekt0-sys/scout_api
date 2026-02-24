@@ -1,0 +1,179 @@
+{
+  "info": {
+    "_postman_id": "6f8a49a2-6bd9-4f3d-9f66-2b85ec9f5e79",
+    "name": "Scout API E2E",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth - Register Team",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Team User\",\n  \"email\": \"team@example.com\",\n  \"password\": \"Password123\",\n  \"password_confirmation\": \"Password123\",\n  \"role\": \"team\",\n  \"city\": \"Istanbul\"\n}"
+        },
+        "url": "{{base_url}}/api/auth/register"
+      }
+    },
+    {
+      "name": "Auth - Register Player",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Player User\",\n  \"email\": \"player@example.com\",\n  \"password\": \"Password123\",\n  \"password_confirmation\": \"Password123\",\n  \"role\": \"player\",\n  \"city\": \"Ankara\"\n}"
+        },
+        "url": "{{base_url}}/api/auth/register"
+      }
+    },
+    {
+      "name": "Auth - Login Team",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"team@example.com\",\n  \"password\": \"Password123\"\n}"
+        },
+        "url": "{{base_url}}/api/auth/login"
+      }
+    },
+    {
+      "name": "Opportunity - Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{team_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Scout Needed\",\n  \"position\": \"FW\",\n  \"city\": \"Istanbul\",\n  \"status\": \"open\"\n}"
+        },
+        "url": "{{base_url}}/api/opportunities"
+      }
+    },
+    {
+      "name": "Auth - Login Player",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"player@example.com\",\n  \"password\": \"Password123\"\n}"
+        },
+        "url": "{{base_url}}/api/auth/login"
+      }
+    },
+    {
+      "name": "Application - Apply",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{player_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"I am interested\"\n}"
+        },
+        "url": "{{base_url}}/api/opportunities/{{opportunity_id}}/apply"
+      }
+    },
+    {
+      "name": "Application - Incoming (Team)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{team_token}}" }
+        ],
+        "url": "{{base_url}}/api/applications/incoming"
+      }
+    },
+    {
+      "name": "Application - Change Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{team_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"accepted\"\n}"
+        },
+        "url": "{{base_url}}/api/applications/{{application_id}}/status"
+      }
+    },
+    {
+      "name": "Contact - Send Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{player_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"to_user_id\": {{team_user_id}},\n  \"subject\": \"Hello\",\n  \"message\": \"Can we talk?\"\n}"
+        },
+        "url": "{{base_url}}/api/contacts"
+      }
+    },
+    {
+      "name": "Contact - Inbox",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{team_token}}" }
+        ],
+        "url": "{{base_url}}/api/contacts/inbox"
+      }
+    },
+    {
+      "name": "Media - Upload",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{player_token}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "{{media_file_path}}"
+            },
+            {
+              "key": "title",
+              "type": "text",
+              "value": "Highlight"
+            }
+          ]
+        },
+        "url": "{{base_url}}/api/media"
+      }
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000" },
+    { "key": "team_token", "value": "" },
+    { "key": "player_token", "value": "" },
+    { "key": "team_user_id", "value": "1" },
+    { "key": "opportunity_id", "value": "1" },
+    { "key": "application_id", "value": "1" },
+    { "key": "media_file_path", "value": "C:/tmp/sample.jpg" }
+  ]
+}
