@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ApplicationController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\MediaController;
+use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\OpportunityController;
 use App\Http\Controllers\Api\PlayerController;
 use App\Http\Controllers\Api\StaffController;
@@ -20,6 +21,8 @@ Route::prefix('auth')->group(function () {
         Route::put('/me', [AuthController::class, 'updateMe']);
     });
 });
+
+Route::get('/news/live', [NewsController::class, 'live']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('players', PlayerController::class)->only(['index', 'show', 'update']);
