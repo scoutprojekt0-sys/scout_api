@@ -500,9 +500,9 @@
       const baseFromWindow = window.NEXTSCOUT_API_BASE;
       const API_BASE =
         baseFromQuery ||
-        baseFromStorage ||
         baseFromWindow ||
         DEFAULT_LIVE_API_BASE ||
+        baseFromStorage ||
         (window.location.origin + "/api");
 
       const searchParams = new URLSearchParams(window.location.search);
