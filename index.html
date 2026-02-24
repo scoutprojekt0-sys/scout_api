@@ -59,6 +59,12 @@
       margin-bottom: 26px;
     }
 
+    .top-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .api-health {
       display: inline-flex;
       align-items: center;
@@ -81,6 +87,19 @@
 
     .api-health.connected .api-health-dot { background: #2fd4b0; }
     .api-health.degraded .api-health-dot { background: #ff7e22; }
+
+    .logout-btn {
+      border: 1px solid #3f6486;
+      background: rgba(34, 57, 78, 0.65);
+      color: #e5f2ff;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .logout-btn[hidden] { display: none; }
 
     .top-live-row {
       display: grid;
@@ -370,6 +389,7 @@
     @media (max-width: 560px) {
       .wrap { padding-top: 20px; }
       .topbar { margin-bottom: 16px; }
+      .top-actions { gap: 8px; }
       .hero-main { padding: 20px; }
       h1 { font-size: clamp(1.9rem, 10.2vw, 2.4rem); }
       .sub { font-size: 0.92rem; }
@@ -386,9 +406,12 @@
   <div class="wrap">
     <header class="topbar">
       <p class="brand">NEXT<span>SCOUT</span></p>
-      <div class="api-health" id="api-health">
-        <span class="api-health-dot"></span>
-        <span id="api-health-text">API Connecting</span>
+      <div class="top-actions">
+        <div class="api-health" id="api-health">
+          <span class="api-health-dot"></span>
+          <span id="api-health-text">API Connecting</span>
+        </div>
+        <button class="logout-btn" id="logout-btn" type="button" hidden>Cikis Yap</button>
       </div>
     </header>
 
@@ -481,7 +504,15 @@
         baseFromWindow ||
         (window.location.origin + "/api");
 
-      const tokenFromQuery = new URLSearchParams(window.location.search).get("token");
+      const searchParams = new URLSearchParams(window.location.search);
+      const tokenFromQuery = searchParams.get("token");
+      if (tokenFromQuery) {
+        localStorage.setItem("nextscout_token", tokenFromQuery);
+        searchParams.delete("token");
+        const cleanedQuery = searchParams.toString();
+        const cleanedUrl = window.location.pathname + (cleanedQuery ? "?" + cleanedQuery : "") + window.location.hash;
+        window.history.replaceState({}, "", cleanedUrl);
+      }
       const token = tokenFromQuery || localStorage.getItem("nextscout_token");
       const headers = token ? { Authorization: "Bearer " + token } : {};
 
@@ -494,6 +525,7 @@
       const newsTime = document.getElementById("news-time");
       const apiHealth = document.getElementById("api-health");
       const apiHealthText = document.getElementById("api-health-text");
+      const logoutBtn = document.getElementById("logout-btn");
 
       const setApiHealth = (state, label) => {
         apiHealth.classList.remove("connected", "degraded");
@@ -572,6 +604,27 @@
           // Token/endpoint invalid oldugunda fallback UI korunur.
         }
       };
+
+      const handleLogout = async () => {
+        try {
+          if (token) {
+            await fetch(API_BASE + "/auth/logout", {
+              method: "POST",
+              headers
+            });
+          }
+        } catch (_) {
+          // Cikis istegi hata verse de local oturum temizlenir.
+        } finally {
+          localStorage.removeItem("nextscout_token");
+          window.location.href = window.location.pathname + window.location.hash;
+        }
+      };
+
+      if (token && logoutBtn) {
+        logoutBtn.hidden = false;
+        logoutBtn.addEventListener("click", handleLogout);
+      }
 
       loadNews();
       loadProtectedData();
