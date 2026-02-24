@@ -57,3 +57,42 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Scout API Quick Start
+
+Tek komut ile ilk kurulum:
+
+```bash
+composer run setup
+```
+
+Gelistirme sunucusu:
+
+```bash
+php artisan serve
+```
+
+E2E akis icin Postman collection:
+
+- postman/Scout_API_E2E.postman_collection.json
+
+Not: Media - Upload istegi icin media_file_path degiskenine lokal bir dosya yolu verin.
+
+Newman ile collection calistirma:
+
+```bash
+npm run test:api
+```
+
+Local override ile calistirma:
+
+```bash
+npm run test:api:local
+```
+
+Windows'ta php.ini kullanarak test kosma (mbstring dahil):
+
+```powershell
+$env:PHPRC='C:\Users\Hp\PhpstormProjects\untitled'; php artisan test
+```
+

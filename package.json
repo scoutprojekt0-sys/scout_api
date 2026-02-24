@@ -4,7 +4,9 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "test:api": "npx newman run postman/Scout_API_E2E.postman_collection.json --environment postman/Scout_API_E2E.postman_environment.json",
+        "test:api:local": "npx newman run postman/Scout_API_E2E.postman_collection.json --environment postman/Scout_API_E2E.postman_environment.json --env-var base_url=http://127.0.0.1:8000"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
