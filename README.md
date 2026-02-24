@@ -62,19 +62,31 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 Tek komut ile ilk kurulum:
 
-`ash
+```bash
 composer run setup
-`
+```
 
 Gelistirme sunucusu:
 
-`ash
+```bash
 php artisan serve
-`
+```
 
 E2E akis icin Postman collection:
 
 - postman/Scout_API_E2E.postman_collection.json
 
 Not: Media - Upload istegi icin media_file_path degiskenine lokal bir dosya yolu verin.
+
+Newman ile collection calistirma:
+
+```bash
+npm run test:api
+```
+
+Windows'ta php.ini kullanarak test kosma (mbstring dahil):
+
+```powershell
+$env:PHPRC='C:\Users\Hp\PhpstormProjects\untitled'; php artisan test
+```
 
