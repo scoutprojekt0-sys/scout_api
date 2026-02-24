@@ -84,6 +84,12 @@ Newman ile collection calistirma:
 npm run test:api
 ```
 
+Local override ile calistirma:
+
+```bash
+npm run test:api:local
+```
+
 Windows'ta php.ini kullanarak test kosma (mbstring dahil):
 
 ```powershell
