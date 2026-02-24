@@ -59,6 +59,29 @@
       margin-bottom: 26px;
     }
 
+    .api-health {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid #3f6486;
+      background: rgba(34, 57, 78, 0.65);
+      color: #cde3f6;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .api-health-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #86a8c4;
+    }
+
+    .api-health.connected .api-health-dot { background: #2fd4b0; }
+    .api-health.degraded .api-health-dot { background: #ff7e22; }
+
     .top-live-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -363,6 +386,10 @@
   <div class="wrap">
     <header class="topbar">
       <p class="brand">NEXT<span>SCOUT</span></p>
+      <div class="api-health" id="api-health">
+        <span class="api-health-dot"></span>
+        <span id="api-health-text">API Connecting</span>
+      </div>
     </header>
 
     <section class="top-live-row" aria-label="Canli bilgi alanlari">
@@ -444,6 +471,7 @@
 
   <script>
     (function () {
+      const DEFAULT_LIVE_API_BASE = "https://scout-api-91m6.onrender.com/api";
       const baseFromQuery = new URLSearchParams(window.location.search).get("api_base");
       const baseFromStorage = localStorage.getItem("nextscout_api_base");
       const baseFromWindow = window.NEXTSCOUT_API_BASE;
@@ -464,6 +492,16 @@
       const newsTitle = document.getElementById("news-title");
       const newsSource = document.getElementById("news-source");
       const newsTime = document.getElementById("news-time");
+      const apiHealth = document.getElementById("api-health");
+      const apiHealthText = document.getElementById("api-health-text");
+
+      const setApiHealth = (state, label) => {
+        apiHealth.classList.remove("connected", "degraded");
+        if (state === "connected" || state === "degraded") {
+          apiHealth.classList.add(state);
+        }
+        apiHealthText.textContent = label;
+      };
 
       const timeAgo = (value) => {
         const date = new Date(value);
@@ -492,6 +530,7 @@
           newsTime.textContent = timeAgo(item.published_at || item.created_at);
         } catch (_) {
           // Endpoint yoksa fallback haber metni kullanilir.
+          setApiHealth("degraded", "API Degraded");
         }
       };
 
