@@ -15,9 +15,11 @@ WORKDIR /var/www/html
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     unzip \
-    libpq-dev \
-    libsqlite3-dev \
-    && docker-php-ext-install pdo pdo_pgsql pdo_sqlite mbstring bcmath \
+    curl \
+    ca-certificates \
+    && curl -fsSL https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions -o /usr/local/bin/install-php-extensions \
+    && chmod +x /usr/local/bin/install-php-extensions \
+    && install-php-extensions pdo_pgsql pdo_sqlite mbstring bcmath \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=vendor /app/vendor /var/www/html/vendor
