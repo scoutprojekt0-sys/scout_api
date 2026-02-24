@@ -502,6 +502,7 @@
         baseFromQuery ||
         baseFromStorage ||
         baseFromWindow ||
+        DEFAULT_LIVE_API_BASE ||
         (window.location.origin + "/api");
 
       const searchParams = new URLSearchParams(window.location.search);
