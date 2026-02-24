@@ -96,3 +96,17 @@ Windows'ta php.ini kullanarak test kosma (mbstring dahil):
 $env:PHPRC='C:\Users\Hp\PhpstormProjects\untitled'; php artisan test
 ```
 
+## Live News Feed
+
+`GET /api/news/live` artik dis RSS/Atom kaynagini okuyabilir.
+
+Environment degiskenleri:
+
+- `NEWS_FEED_URL` (ornek: `https://feeds.bbci.co.uk/sport/football/rss.xml`)
+- `NEWS_FEED_SOURCE` (ornek: `Football Feed`)
+- `NEWS_FEED_TIMEOUT` (saniye)
+
+Kaynak ulasilamazsa endpoint otomatik olarak:
+1. acik opportunities kayitlarina duser
+2. onlar da yoksa statik fallback haber dondurur
+

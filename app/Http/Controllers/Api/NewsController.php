@@ -3,18 +3,52 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\ExternalNewsFeedService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class NewsController extends Controller
 {
+    public function __construct(private readonly ExternalNewsFeedService $externalFeed)
+    {
+    }
+
     public function live(): JsonResponse
+    {
+        $external = $this->externalFeed->fetch(5);
+        if ($external !== []) {
+            return response()->json([
+                'ok' => true,
+                'data' => $external,
+            ]);
+        }
+
+        $internal = $this->fromOpportunities(5);
+        if ($internal !== []) {
+            return response()->json([
+                'ok' => true,
+                'data' => $internal,
+            ]);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'data' => [[
+                'id' => 0,
+                'title' => 'Scout aginda yeni transfer firsatlari acildi.',
+                'source' => 'NextScout',
+                'published_at' => now()->toISOString(),
+            ]],
+        ]);
+    }
+
+    private function fromOpportunities(int $limit): array
     {
         $rows = DB::table('opportunities')
             ->leftJoin('users as teams', 'teams.id', '=', 'opportunities.team_user_id')
             ->where('opportunities.status', 'open')
             ->orderByDesc('opportunities.created_at')
-            ->limit(5)
+            ->limit($limit)
             ->get([
                 'opportunities.id',
                 'opportunities.title',
@@ -23,29 +57,16 @@ class NewsController extends Controller
             ]);
 
         if ($rows->isEmpty()) {
-            return response()->json([
-                'ok' => true,
-                'data' => [[
-                    'id' => 0,
-                    'title' => 'Scout aginda yeni transfer firsatlari acildi.',
-                    'source' => 'NextScout',
-                    'published_at' => now()->toISOString(),
-                ]],
-            ]);
+            return [];
         }
 
-        $data = $rows->map(function ($row) {
+        return $rows->map(function ($row) {
             return [
                 'id' => (int) $row->id,
                 'title' => (string) $row->title,
                 'source' => $row->source ?: 'Kulup',
                 'published_at' => (string) $row->published_at,
             ];
-        })->values();
-
-        return response()->json([
-            'ok' => true,
-            'data' => $data,
-        ]);
+        })->values()->all();
     }
 }
