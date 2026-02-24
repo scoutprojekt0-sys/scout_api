@@ -15,10 +15,15 @@ class NewsController extends Controller
 
     public function live(): JsonResponse
     {
+        $feedSource = (string) env('NEWS_FEED_SOURCE', 'Football Feed');
+
         $external = $this->externalFeed->fetch(5);
         if ($external !== []) {
             return response()->json([
                 'ok' => true,
+                'meta' => [
+                    'feed_source' => $feedSource,
+                ],
                 'data' => $external,
             ]);
         }
@@ -27,12 +32,18 @@ class NewsController extends Controller
         if ($internal !== []) {
             return response()->json([
                 'ok' => true,
+                'meta' => [
+                    'feed_source' => $feedSource,
+                ],
                 'data' => $internal,
             ]);
         }
 
         return response()->json([
             'ok' => true,
+            'meta' => [
+                'feed_source' => $feedSource,
+            ],
             'data' => [[
                 'id' => 0,
                 'title' => 'Scout aginda yeni transfer firsatlari acildi.',
