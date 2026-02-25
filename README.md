@@ -157,7 +157,11 @@ CI guvenlik kontrolleri:
 - `docs/runbooks`: deploy/rollback/incident runbooks
 - `docs/runbooks/branch-protection.md`: main branch required check policy
 - `docs/runbooks/monitoring-alerts.md`: ops log, alert and first-response guide
+- `docs/runbooks/backup-restore.md`: backup and restore procedure
+- `docs/runbooks/rollback-procedure.md`: rollback steps and verification
 - `docs/security`: security strategy and hardening notes
+- `docs/security/SECURITY_CHECKLIST_FINAL.md`: final security completion checklist
+- `docs/security/PENTEST_SCENARIOS.md`: pentest-style scenario set
 - `docs/DESIGN_SYSTEM_V1.md`: design tokens and auth component rules
 - `docs/ROADMAP_WEEK1_WEEK2.md`: 2 haftalik delivery plani
 - `docs/ROADMAP_WEEK3_WEEK4.md`: core UX + messaging/media delivery plani
