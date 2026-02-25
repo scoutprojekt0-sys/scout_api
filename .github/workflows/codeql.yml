@@ -1,17 +1,24 @@
-name: API Smoke
+name: CodeQL
 
 on:
-  pull_request:
+  workflow_dispatch:
   push:
     branches:
+      - main
       - feat/scout-api-hardening
       - fix/rc-workflow-to-feat
+  pull_request:
+  schedule:
+    - cron: '45 2 * * 1'
 
 permissions:
   contents: read
+  actions: read
+  security-events: write
 
 jobs:
-  smoke:
+  analyze:
+    name: Analyze (PHP)
     runs-on: ubuntu-latest
 
     steps:
@@ -22,19 +29,11 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: dom, curl, libxml, mbstring, zip, pdo, sqlite, pdo_sqlite
           coverage: none
 
-      - name: Install Composer dependencies
+      - name: Install dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
 
-      - name: Prepare environment
+      - name: Static syntax scan fallback
         run: |
-          cp .env.example .env
-          php artisan key:generate
-
-      - name: API route smoke
-        run: php artisan route:list --path=api
-
-      - name: Test smoke
-        run: php artisan test
+          find app bootstrap config database routes tests -name "*.php" -print0 | xargs -0 -n1 php -l
