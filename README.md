@@ -167,6 +167,7 @@ CI guvenlik kontrolleri:
 - `docs/launch/PREPROD_DRY_RUN_2026-02-25.md`: pre-production dry-run evidence
 - `docs/launch/RELEASE_CANDIDATE_CHECKLIST.md`: release candidate go/no-go checklist
 - `docs/launch/WEEK1_MONITORING_PLAN.md`: first-week launch monitoring cadence
+- `docs/launch/GO_LIVE_CUTOVER_CHECKLIST.md`: launch window cutover steps
 - `docs/DESIGN_SYSTEM_V1.md`: design tokens and auth component rules
 - `docs/ROADMAP_WEEK1_WEEK2.md`: 2 haftalik delivery plani
 - `docs/ROADMAP_WEEK3_WEEK4.md`: core UX + messaging/media delivery plani
