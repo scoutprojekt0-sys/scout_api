@@ -47,7 +47,7 @@ return [
     |
     */
 
-    'expiration' => (int) env('SANCTUM_TOKEN_EXPIRATION', 10080),
+    'expiration' => (int) config('scout.auth.token_expiration', 10080),
 
     /*
     |--------------------------------------------------------------------------

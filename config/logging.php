@@ -76,8 +76,8 @@ return [
         'security' => [
             'driver' => 'daily',
             'path' => storage_path('logs/security.log'),
-            'level' => env('LOG_SECURITY_LEVEL', 'info'),
-            'days' => env('LOG_SECURITY_DAYS', 30),
+            'level' => config('scout.logging.security_level', 'info'),
+            'days' => (int) config('scout.logging.security_days', 30),
             'replace_placeholders' => true,
         ],
 

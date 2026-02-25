@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use RuntimeException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->assertRequiredProductionConfig();
+
         Gate::policy(Application::class, ApplicationPolicy::class);
         Gate::policy(Contact::class, ContactPolicy::class);
         Gate::policy(Media::class, MediaPolicy::class);
@@ -39,5 +42,29 @@ class AppServiceProvider extends ServiceProvider
 
             return [Limit::perMinute(60)->by($key)];
         });
+    }
+
+    private function assertRequiredProductionConfig(): void
+    {
+        if (! $this->app->environment('production')) {
+            return;
+        }
+
+        $checks = [
+            'APP_KEY' => config('app.key'),
+            'APP_URL' => config('app.url'),
+            'FRONTEND_URL' => config('scout.frontend_url'),
+            'CORS_ALLOWED_ORIGINS' => implode(',', config('scout.cors.allowed_origins', [])),
+        ];
+
+        $missing = array_keys(array_filter($checks, static function ($value): bool {
+            return ! is_string($value) || trim($value) === '';
+        }));
+
+        if ($missing !== []) {
+            throw new RuntimeException(
+                'Missing required production configuration: '.implode(', ', $missing)
+            );
+        }
     }
 }
