@@ -8,6 +8,7 @@ use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Config;
+use Laravel\Sanctum\PersonalAccessToken;
 use Tests\TestCase;
 
 class AuthSecurityHardeningTest extends TestCase
@@ -33,7 +34,25 @@ class AuthSecurityHardeningTest extends TestCase
         $this->postJson('/api/auth/login', [
             'email' => 'lock@test.com',
             'password' => 'WrongPassword999',
-        ])->assertStatus(423)->assertJsonPath('ok', false);
+        ])->assertStatus(423)
+            ->assertJsonPath('ok', false)
+            ->assertJsonPath('code', 'auth_temporarily_locked')
+            ->assertJsonPath('retry_after', fn ($value) => is_int($value) && $value > 0);
+    }
+
+    public function test_login_invalid_credentials_returns_consistent_error_code(): void
+    {
+        User::factory()->create([
+            'email' => 'invalid@test.com',
+            'password' => Hash::make('Password123'),
+        ]);
+
+        $this->postJson('/api/auth/login', [
+            'email' => 'invalid@test.com',
+            'password' => 'WrongPassword999',
+        ])->assertStatus(422)
+            ->assertJsonPath('ok', false)
+            ->assertJsonPath('code', 'auth_invalid_credentials');
     }
 
     public function test_role_change_revokes_existing_tokens(): void
@@ -82,6 +101,7 @@ class AuthSecurityHardeningTest extends TestCase
             'password' => 'Password123',
         ])->assertOk();
 
+        $response->assertJsonPath('code', 'auth_logged_in');
         $response->assertJsonPath('data.expires_at', fn ($value) => is_string($value) && $value !== '');
 
         $latestExpiresAt = DB::table('personal_access_tokens')->max('expires_at');
@@ -104,6 +124,9 @@ class AuthSecurityHardeningTest extends TestCase
         $sessions = $response->json('data');
         $this->assertCount(2, $sessions);
         $this->assertTrue(collect($sessions)->contains(fn ($s) => (int) $s['id'] === $currentTokenId && $s['is_current'] === true));
+        $this->assertTrue(collect($sessions)->contains(fn ($s) => array_key_exists('device_label', $s)));
+        $this->assertTrue(collect($sessions)->contains(fn ($s) => array_key_exists('ip_address', $s)));
+        $this->assertTrue(collect($sessions)->contains(fn ($s) => array_key_exists('user_agent', $s)));
     }
 
     public function test_revoke_session_deletes_target_token(): void
@@ -119,6 +142,10 @@ class AuthSecurityHardeningTest extends TestCase
             ->assertJsonPath('ok', true);
 
         $this->assertDatabaseMissing('personal_access_tokens', ['id' => $otherId]);
+        $this->assertDatabaseHas('audit_events', [
+            'user_id' => $user->id,
+            'event_type' => 'auth.session.revoke_one',
+        ]);
     }
 
     public function test_revoke_session_rejects_current_token_id(): void
@@ -130,7 +157,8 @@ class AuthSecurityHardeningTest extends TestCase
         $this->withHeader('Authorization', 'Bearer '.$current)
             ->deleteJson('/api/auth/sessions/'.$currentId)
             ->assertStatus(422)
-            ->assertJsonPath('ok', false);
+            ->assertJsonPath('ok', false)
+            ->assertJsonPath('code', 'session_revoke_current_not_allowed');
     }
 
     public function test_logout_all_revokes_other_tokens_only(): void
@@ -151,6 +179,10 @@ class AuthSecurityHardeningTest extends TestCase
         $this->assertDatabaseHas('personal_access_tokens', ['id' => $currentId]);
         $this->assertDatabaseMissing('personal_access_tokens', ['id' => $otherOneId]);
         $this->assertDatabaseMissing('personal_access_tokens', ['id' => $otherTwoId]);
+        $this->assertDatabaseHas('audit_events', [
+            'user_id' => $user->id,
+            'event_type' => 'auth.session.revoke_others',
+        ]);
     }
 
     public function test_refresh_rotates_current_token(): void
@@ -170,5 +202,50 @@ class AuthSecurityHardeningTest extends TestCase
         $this->assertNotEquals($currentId, $newTokenId);
         $this->assertDatabaseMissing('personal_access_tokens', ['id' => $currentId]);
         $this->assertDatabaseHas('personal_access_tokens', ['id' => $newTokenId]);
+    }
+
+    public function test_unauthenticated_requests_cannot_access_session_management_endpoints(): void
+    {
+        $this->getJson('/api/auth/sessions')->assertStatus(401);
+        $this->deleteJson('/api/auth/sessions')->assertStatus(401);
+        $this->deleteJson('/api/auth/sessions/1')->assertStatus(401);
+        $this->postJson('/api/auth/refresh')->assertStatus(401);
+    }
+
+    public function test_user_cannot_revoke_another_users_session(): void
+    {
+        $attacker = User::factory()->create(['role' => 'player']);
+        $victim = User::factory()->create(['role' => 'team']);
+
+        $attackerToken = $attacker->createToken('attacker', $attacker->tokenAbilities())->plainTextToken;
+        $victimToken = $victim->createToken('victim', $victim->tokenAbilities())->plainTextToken;
+        $victimTokenId = (int) explode('|', $victimToken)[0];
+
+        $this->withHeader('Authorization', 'Bearer '.$attackerToken)
+            ->deleteJson('/api/auth/sessions/'.$victimTokenId)
+            ->assertStatus(404)
+            ->assertJsonPath('ok', false)
+            ->assertJsonPath('code', 'session_not_found');
+
+        $this->assertDatabaseHas('personal_access_tokens', ['id' => $victimTokenId]);
+    }
+
+    public function test_refresh_invalidates_old_token_for_subsequent_requests(): void
+    {
+        $user = User::factory()->create(['role' => 'manager']);
+        $oldToken = $user->createToken('current', $user->tokenAbilities())->plainTextToken;
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$oldToken)
+            ->postJson('/api/auth/refresh')
+            ->assertOk();
+
+        $newToken = (string) $response->json('data.token');
+        $this->assertNull(PersonalAccessToken::findToken($oldToken));
+        $this->assertNotNull(PersonalAccessToken::findToken($newToken));
+
+        $this->withHeader('Authorization', 'Bearer '.$newToken)
+            ->getJson('/api/auth/me')
+            ->assertOk()
+            ->assertJsonPath('ok', true);
     }
 }

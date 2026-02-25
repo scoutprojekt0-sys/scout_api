@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth');
+    Route::post('/password/forgot', [AuthController::class, 'forgotPassword'])->middleware('throttle:auth');
+    Route::post('/password/reset', [AuthController::class, 'resetPassword'])->middleware('throttle:auth');
 
     Route::middleware(['auth:sanctum', 'reject_legacy_token', 'throttle:api'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);

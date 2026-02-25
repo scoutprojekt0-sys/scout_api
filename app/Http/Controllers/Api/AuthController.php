@@ -3,17 +3,21 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\UpdateMeRequest;
+use App\Models\AuditEvent;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
@@ -31,10 +35,11 @@ class AuthController extends Controller
             'phone' => $data['phone'] ?? null,
         ]);
 
-        [$token, $expiresAt] = $this->issueToken($user);
+        [$token, $expiresAt] = $this->issueToken($user, $request);
 
         return response()->json([
             'ok' => true,
+            'code' => 'auth_registered',
             'message' => 'Kayit basarili.',
             'data' => [
                 'token' => $token,
@@ -57,6 +62,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'ok' => false,
+                'code' => 'auth_temporarily_locked',
                 'message' => 'Cok fazla hatali deneme. Lutfen daha sonra tekrar deneyin.',
                 'retry_after' => $seconds,
             ], Response::HTTP_LOCKED);
@@ -81,9 +87,14 @@ class AuthController extends Controller
                 'locked' => $attempts >= 5,
             ]);
 
-            throw ValidationException::withMessages([
-                'email' => ['E-posta veya sifre hatali.'],
-            ]);
+            return response()->json([
+                'ok' => false,
+                'code' => 'auth_invalid_credentials',
+                'message' => 'E-posta veya sifre hatali.',
+                'errors' => [
+                    'email' => ['E-posta veya sifre hatali.'],
+                ],
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         RateLimiter::clear($attemptKey);
@@ -95,7 +106,7 @@ class AuthController extends Controller
             $user->tokens()->oldest()->limit($tokenCount - 4)->delete();
         }
 
-        [$token, $expiresAt] = $this->issueToken($user);
+        [$token, $expiresAt] = $this->issueToken($user, $request);
 
         Log::channel('security')->info('Login success', [
             'user_id' => $user->id,
@@ -105,6 +116,7 @@ class AuthController extends Controller
 
         return response()->json([
             'ok' => true,
+            'code' => 'auth_logged_in',
             'message' => 'Giris basarili.',
             'data' => [
                 'token' => $token,
@@ -120,7 +132,60 @@ class AuthController extends Controller
 
         return response()->json([
             'ok' => true,
+            'code' => 'auth_logged_out',
             'message' => 'Cikis yapildi.',
+        ]);
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
+    {
+        $email = strtolower((string) $request->validated('email'));
+        /** @var User|null $user */
+        $user = User::query()->where('email', $email)->first();
+
+        if ($user) {
+            Password::broker()->createToken($user);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'code' => 'password_reset_link_sent',
+            'message' => 'Eger hesap mevcutsa sifre yenileme baglantisi gonderildi.',
+        ]);
+    }
+
+    public function resetPassword(ResetPasswordRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+        $email = strtolower((string) $validated['email']);
+
+        $status = Password::reset(
+            [
+                'email' => $email,
+                'token' => (string) $validated['token'],
+                'password' => (string) $validated['password'],
+            ],
+            function (User $user, string $password): void {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                ])->save();
+
+                $user->tokens()->delete();
+            }
+        );
+
+        if ($status !== Password::PASSWORD_RESET) {
+            return response()->json([
+                'ok' => false,
+                'code' => 'password_reset_token_invalid',
+                'message' => 'Sifre yenileme baglantisi gecersiz veya suresi dolmus.',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'code' => 'password_reset_success',
+            'message' => 'Sifre basariyla guncellendi. Lutfen tekrar giris yapin.',
         ]);
     }
 
@@ -140,14 +205,16 @@ class AuthController extends Controller
 
         $sessions = $user->tokens()
             ->orderByDesc('id')
-            ->get(['id', 'name', 'abilities', 'last_used_at', 'expires_at', 'created_at'])
+            ->get(['id', 'name', 'ip_address', 'user_agent', 'abilities', 'last_used_at', 'expires_at', 'created_at'])
             ->map(function ($token) use ($currentTokenId) {
                 $abilities = is_array($token->abilities) ? $token->abilities : [];
 
                 return [
                     'id' => $token->id,
-                    'name' => $token->name,
+                    'device_label' => (string) $token->name,
                     'is_current' => (int) $token->id === (int) $currentTokenId,
+                    'ip_address' => $token->ip_address,
+                    'user_agent' => $token->user_agent,
                     'abilities' => $abilities,
                     'last_used_at' => optional($token->last_used_at)?->toISOString(),
                     'expires_at' => optional($token->expires_at)?->toISOString(),
@@ -181,6 +248,7 @@ class AuthController extends Controller
 
         return response()->json([
             'ok' => true,
+            'code' => 'profile_updated',
             'message' => 'Profil guncellendi.',
             'data' => $user->fresh(),
         ]);
@@ -191,18 +259,25 @@ class AuthController extends Controller
         /** @var User $user */
         $user = $request->user();
         $currentToken = $user->currentAccessToken();
+        $currentTokenId = $currentToken?->id ?? $this->resolveBearerTokenId($request->bearerToken());
 
-        [$token, $expiresAt] = $this->issueToken($user);
+        [$token, $expiresAt] = $this->issueToken($user, $request);
 
-        $currentToken?->delete();
+        if ($currentTokenId !== null) {
+            $user->tokens()->where('id', $currentTokenId)->delete();
+        }
 
         Log::channel('security')->info('Token refreshed', [
             'user_id' => $user->id,
             'ip' => $request->ip(),
         ]);
+        $this->recordAuditEvent($user->id, 'auth.session.refresh', [
+            'ip' => $request->ip(),
+        ]);
 
         return response()->json([
             'ok' => true,
+            'code' => 'auth_refreshed',
             'message' => 'Oturum yenilendi.',
             'data' => [
                 'token' => $token,
@@ -230,9 +305,14 @@ class AuthController extends Controller
             'revoked_count' => $revoked,
             'ip' => $request->ip(),
         ]);
+        $this->recordAuditEvent($user->id, 'auth.session.revoke_others', [
+            'revoked_count' => $revoked,
+            'ip' => $request->ip(),
+        ]);
 
         return response()->json([
             'ok' => true,
+            'code' => 'sessions_revoked_except_current',
             'message' => 'Diger tum cihazlardan cikis yapildi.',
             'data' => [
                 'revoked_count' => $revoked,
@@ -249,6 +329,7 @@ class AuthController extends Controller
         if ($currentTokenId !== null && (int) $tokenId === (int) $currentTokenId) {
             return response()->json([
                 'ok' => false,
+                'code' => 'session_revoke_current_not_allowed',
                 'message' => 'Mevcut oturumu bu endpoint ile kapatamazsiniz. Logout kullanin.',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
@@ -257,6 +338,7 @@ class AuthController extends Controller
         if (!$token) {
             return response()->json([
                 'ok' => false,
+                'code' => 'session_not_found',
                 'message' => 'Oturum bulunamadi.',
             ], Response::HTTP_NOT_FOUND);
         }
@@ -268,23 +350,69 @@ class AuthController extends Controller
             'token_id' => $tokenId,
             'ip' => $request->ip(),
         ]);
+        $this->recordAuditEvent($user->id, 'auth.session.revoke_one', [
+            'token_id' => $tokenId,
+            'ip' => $request->ip(),
+        ]);
 
         return response()->json([
             'ok' => true,
+            'code' => 'session_revoked',
             'message' => 'Oturum sonlandirildi.',
         ]);
     }
 
-    private function issueToken(User $user): array
+    private function issueToken(User $user, Request $request): array
     {
         $expirationMinutes = (int) config('sanctum.expiration');
         $expiresAt = $expirationMinutes > 0 ? now()->addMinutes($expirationMinutes) : null;
-
-        $plainTextToken = $user->createToken('api-token', $user->tokenAbilities(), $expiresAt)->plainTextToken;
+        $tokenName = $this->resolveDeviceLabel((string) $request->userAgent());
+        $plainTextToken = $user->createToken($tokenName, $user->tokenAbilities(), $expiresAt)->plainTextToken;
+        $tokenId = (int) explode('|', $plainTextToken)[0];
+        $tokenRecord = $user->tokens()->where('id', $tokenId)->first();
+        $userAgent = trim((string) $request->userAgent());
+        if ($tokenRecord instanceof Model) {
+            $tokenRecord->forceFill([
+                'ip_address' => (string) $request->ip(),
+                'user_agent' => $userAgent !== '' ? substr($userAgent, 0, 1000) : null,
+            ])->save();
+        }
 
         return [
             $plainTextToken,
             $expiresAt instanceof Carbon ? $expiresAt->toISOString() : null,
         ];
+    }
+
+    private function resolveDeviceLabel(string $userAgent): string
+    {
+        $ua = trim($userAgent);
+        if ($ua === '') {
+            return 'Unknown device';
+        }
+
+        $short = substr($ua, 0, 48);
+
+        return 'Device: '.$short;
+    }
+
+    private function recordAuditEvent(?int $userId, string $eventType, array $metadata = []): void
+    {
+        AuditEvent::query()->create([
+            'user_id' => $userId,
+            'event_type' => $eventType,
+            'metadata' => $metadata,
+        ]);
+    }
+
+    private function resolveBearerTokenId(?string $bearerToken): ?int
+    {
+        if (!is_string($bearerToken) || !str_contains($bearerToken, '|')) {
+            return null;
+        }
+
+        [$id] = explode('|', $bearerToken, 2);
+
+        return ctype_digit($id) ? (int) $id : null;
     }
 }

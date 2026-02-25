@@ -114,6 +114,17 @@ Auth session endpointleri:
 - `POST /api/auth/refresh` mevcut tokeni yeniler (token rotation)
 - `DELETE /api/auth/sessions/{tokenId}` secili cihazi kapatir
 - `DELETE /api/auth/sessions` mevcut cihaz haric tum oturumlari kapatir
+- `POST /api/auth/password/forgot` reset link talebi
+- `POST /api/auth/password/reset` token ile sifre yenileme
+
+`GET /api/auth/sessions` response alanlari:
+
+- `device_label`
+- `ip_address`
+- `user_agent`
+- `last_used_at`
+
+Session revoke olaylari `audit_events` tablosuna yazilir.
 
 CI guvenlik kontrolleri:
 
@@ -123,3 +134,54 @@ CI guvenlik kontrolleri:
 - `.github/workflows/codeql.yml` (CodeQL PHP analizi)
 - `.github/workflows/tests.yml` icinde Pint style check
 - `.github/workflows/api-smoke.yml` icinde Newman Postman E2E
+
+## Project Docs Structure
+
+- `docs/adr`: architecture decision records
+- `docs/api`: API contract and error mapping notes
+- `docs/runbooks`: deploy/rollback/incident runbooks
+- `docs/runbooks/branch-protection.md`: main branch required check policy
+- `docs/security`: security strategy and hardening notes
+- `docs/DESIGN_SYSTEM_V1.md`: design tokens and auth component rules
+- `docs/ROADMAP_WEEK1_WEEK2.md`: 2 haftalik delivery plani
+
+## Environment Matrix
+
+| Variable | Local | CI | Production | Notes |
+| --- | --- | --- | --- | --- |
+| `APP_ENV` | Required | Required | Required | `local` / `testing` / `production` |
+| `APP_KEY` | Required | Required | Required | `php artisan key:generate` |
+| `APP_URL` | Required | Required | Required | API base URL |
+| `DB_CONNECTION` | Required | Required | Required | default `sqlite` |
+| `FRONTEND_URL` | Optional | Optional | Required | frontend origin |
+| `CORS_ALLOWED_ORIGINS` | Optional | Optional | Required | comma-separated allowed origins |
+| `SANCTUM_TOKEN_EXPIRATION` | Optional | Optional | Optional | minutes, default `10080` |
+| `LOG_SECURITY_LEVEL` | Optional | Optional | Optional | default `info` |
+| `LOG_SECURITY_DAYS` | Optional | Optional | Optional | default `30` |
+
+Production boot-time validation now fails fast if these are missing:
+
+- `APP_KEY`
+- `APP_URL`
+- `FRONTEND_URL`
+- `CORS_ALLOWED_ORIGINS`
+
+Auth design demo route:
+
+- `GET /auth/design-demo`
+- `GET /auth/sessions`
+
+## Quality Gates
+
+Local:
+
+- `composer lint`
+- `composer test`
+- `composer quality`
+
+CI:
+
+- `.github/workflows/tests.yml`
+- `.github/workflows/security.yml`
+- `.github/workflows/api-smoke.yml`
+- `.github/workflows/codeql.yml`
