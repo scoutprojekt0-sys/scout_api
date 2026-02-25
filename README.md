@@ -164,6 +164,9 @@ CI guvenlik kontrolleri:
 - `docs/security/PENTEST_SCENARIOS.md`: pentest-style scenario set
 - `docs/uat/UAT_WEEK7_SIGNOFF.md`: week 7 role-based UAT sign-off
 - `docs/accessibility/WEEK7_ACCESSIBILITY_CHECKLIST.md`: week 7 accessibility pass report
+- `docs/launch/PREPROD_DRY_RUN_2026-02-25.md`: pre-production dry-run evidence
+- `docs/launch/RELEASE_CANDIDATE_CHECKLIST.md`: release candidate go/no-go checklist
+- `docs/launch/WEEK1_MONITORING_PLAN.md`: first-week launch monitoring cadence
 - `docs/DESIGN_SYSTEM_V1.md`: design tokens and auth component rules
 - `docs/ROADMAP_WEEK1_WEEK2.md`: 2 haftalik delivery plani
 - `docs/ROADMAP_WEEK3_WEEK4.md`: core UX + messaging/media delivery plani
@@ -238,3 +241,13 @@ CI:
 - Added skip links and improved keyboard focus-visible styling.
 - Added live status regions (`role="status"`, `aria-live="polite"`) and async `aria-busy` toggles.
 - Added UAT and accessibility evidence docs under `docs/uat` and `docs/accessibility`.
+
+## Week 8 Launch Notes
+
+- Added release documentation package under `docs/launch`:
+  - pre-prod dry-run report
+  - release candidate checklist
+  - first-week monitoring plan
+- Added manual RC workflow:
+  - `.github/workflows/release-candidate.yml`
+  - runs quality gates plus both Newman E2E collections

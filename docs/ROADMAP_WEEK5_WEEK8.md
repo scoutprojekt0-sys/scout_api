@@ -5,7 +5,7 @@
 - Week 5: Completed
 - Week 6: Completed
 - Week 7: Completed
-- Week 8: In progress
+- Week 8: Completed
 
 ## Week 5: Performance + Reliability
 
