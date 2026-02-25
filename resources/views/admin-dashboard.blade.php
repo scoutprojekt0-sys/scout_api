@@ -9,25 +9,26 @@
         @endif
         <style>
             :root {
-                --bg: #f4f6fb;
-                --surface: #ffffff;
-                --ink: #1d2440;
-                --muted: #6b7288;
-                --line: #dde3f0;
-                --blue: #5f67c7;
-                --blue-strong: #454ea8;
-                --green: #79df63;
-                --yellow: #f3c247;
-                --violet: #a6a3de;
-                --danger: #d9415f;
-                --shadow: 0 16px 36px rgba(27, 35, 77, 0.1);
+                --bg: #0b0b0c;
+                --surface: #141417;
+                --surface-soft: #1b1b21;
+                --ink: #f2f2f4;
+                --muted: #aaaab4;
+                --line: #2d2d35;
+                --red: #df1f36;
+                --red-strong: #b41227;
+                --white: #ffffff;
+                --shadow: 0 18px 38px rgba(0, 0, 0, 0.38);
             }
 
             * { box-sizing: border-box; }
             body {
                 margin: 0;
                 font-family: "Segoe UI", Tahoma, sans-serif;
-                background: radial-gradient(circle at 0% 0%, #e8ebff 0%, var(--bg) 45%, #f7f8fc 100%);
+                background:
+                    radial-gradient(circle at 8% 8%, rgba(223, 31, 54, 0.22), transparent 34%),
+                    radial-gradient(circle at 92% 92%, rgba(223, 31, 54, 0.12), transparent 30%),
+                    var(--bg);
                 color: var(--ink);
             }
 
@@ -64,11 +65,12 @@
                 width: 34px;
                 height: 34px;
                 border-radius: 10px;
-                background: linear-gradient(145deg, var(--green), #9df88a);
+                background: linear-gradient(145deg, var(--red), #ff4e63);
                 display: grid;
                 place-items: center;
                 font-size: 14px;
                 font-weight: 700;
+                color: var(--white);
             }
 
             .nav-list {
@@ -78,26 +80,32 @@
 
             .nav-item {
                 border: 1px solid transparent;
-                background: #f5f7ff;
-                color: #454d72;
+                background: var(--surface-soft);
+                color: #d2d2db;
                 border-radius: 10px;
                 padding: 10px 12px;
                 text-align: left;
                 font-weight: 600;
                 cursor: pointer;
+                transition: 150ms ease;
             }
 
             .nav-item.active {
-                background: var(--blue);
-                color: #fff;
+                background: linear-gradient(120deg, var(--red), var(--red-strong));
+                color: var(--white);
+                border-color: transparent;
+            }
+
+            .nav-item:hover {
+                border-color: #43434f;
             }
 
             .support-box {
                 margin-top: 8px;
-                border: 1px solid #cad2ec;
+                border: 1px solid #353541;
                 border-radius: 12px;
                 padding: 12px;
-                background: #eef2ff;
+                background: #17171d;
                 display: grid;
                 gap: 8px;
             }
@@ -106,8 +114,8 @@
                 border: 0;
                 border-radius: 8px;
                 padding: 10px 12px;
-                background: var(--green);
-                color: #134200;
+                background: var(--red);
+                color: var(--white);
                 font-weight: 700;
                 cursor: pointer;
             }
@@ -135,6 +143,8 @@
                 border-radius: 10px;
                 padding: 10px 12px;
                 outline: none;
+                background: #101015;
+                color: var(--white);
             }
 
             .token-row {
@@ -151,6 +161,8 @@
                 border-radius: 10px;
                 padding: 10px 12px;
                 outline: none;
+                background: #101015;
+                color: var(--white);
             }
 
             .btn {
@@ -162,12 +174,12 @@
             }
 
             .btn-primary {
-                background: var(--blue);
-                color: #fff;
+                background: linear-gradient(120deg, var(--red), var(--red-strong));
+                color: var(--white);
             }
 
             .btn-secondary {
-                background: #fff;
+                background: #1a1a20;
                 border-color: var(--line);
                 color: var(--ink);
             }
@@ -187,7 +199,7 @@
                 border: 1px solid var(--line);
                 border-radius: 12px;
                 padding: 12px;
-                background: #fbfcff;
+                background: linear-gradient(180deg, #1a1a20, #151519);
                 display: grid;
                 gap: 6px;
             }
@@ -202,6 +214,7 @@
                 font-size: 24px;
                 font-weight: 800;
                 line-height: 1;
+                color: var(--white);
             }
 
             .tab-row {
@@ -216,15 +229,15 @@
                 border-radius: 999px;
                 padding: 8px 12px;
                 cursor: pointer;
-                background: #fff;
-                color: #4f567b;
+                background: #191920;
+                color: #d0d0d7;
                 font-weight: 700;
             }
 
             .tab-btn.active {
-                background: #e9ecff;
-                border-color: #c9d0ff;
-                color: var(--blue-strong);
+                background: #29161a;
+                border-color: #603039;
+                color: #ffd5db;
             }
 
             .board-wrap {
@@ -236,7 +249,7 @@
                 border: 1px solid var(--line);
                 border-radius: 12px;
                 padding: 12px;
-                background: #fff;
+                background: #18181d;
                 display: grid;
                 gap: 8px;
             }
@@ -255,9 +268,9 @@
                 font-weight: 700;
             }
 
-            .chip-open { background: #e8ffe4; color: #1f6f00; }
-            .chip-closed { background: #ffe9ee; color: #a3002e; }
-            .chip-pending { background: #fff6de; color: #8a5f00; }
+            .chip-open { background: #1c3724; color: #97f4ad; }
+            .chip-closed { background: #3a151b; color: #ff95a4; }
+            .chip-pending { background: #3a311a; color: #f4d78d; }
 
             .tiny {
                 font-size: 12px;
@@ -268,7 +281,7 @@
                 width: 100%;
                 height: 8px;
                 border-radius: 999px;
-                background: #edf1fb;
+                background: #262630;
                 overflow: hidden;
             }
 
@@ -276,7 +289,7 @@
                 display: block;
                 height: 100%;
                 border-radius: 999px;
-                background: linear-gradient(90deg, var(--blue), var(--green));
+                background: linear-gradient(90deg, #ff5e6f, var(--red));
             }
 
             .report-grid {
@@ -289,7 +302,7 @@
                 border: 1px solid var(--line);
                 border-radius: 12px;
                 padding: 12px;
-                background: #fff;
+                background: #18181d;
                 display: grid;
                 gap: 8px;
             }
@@ -308,7 +321,7 @@
             }
 
             .bar-track {
-                background: #edf1fb;
+                background: #262630;
                 border-radius: 999px;
                 height: 8px;
                 overflow: hidden;
@@ -317,7 +330,7 @@
             .bar-track > span {
                 display: block;
                 height: 100%;
-                background: var(--violet);
+                background: linear-gradient(90deg, #ff5e6f, var(--red));
             }
 
             .rightbar {
@@ -339,7 +352,7 @@
                 width: 42px;
                 height: 42px;
                 border-radius: 50%;
-                background: #d9def3;
+                background: #2f2f38;
                 display: grid;
                 place-items: center;
                 font-weight: 700;
@@ -359,6 +372,8 @@
                 border: 1px solid var(--line);
                 border-radius: 8px;
                 padding: 9px 10px;
+                background: #101015;
+                color: var(--white);
             }
 
             .scout-grid {
@@ -373,7 +388,7 @@
                 padding: 8px;
                 text-align: center;
                 font-size: 11px;
-                background: #f7f8ff;
+                background: #1a1a22;
             }
 
             .hidden { display: none; }
@@ -396,7 +411,7 @@
             <aside class="panel sidebar">
                 <div class="brand">
                     <div class="brand-badge">SZ</div>
-                    <div>ScoutZone Admin</div>
+                    <div>ScoutZone Command</div>
                 </div>
                 <div class="nav-list">
                     <button class="nav-item active" type="button">Dashboard</button>
@@ -408,7 +423,7 @@
                 </div>
                 <div class="support-box">
                     <strong>Support 24/7</strong>
-                    <span class="tiny">Need help with scout operations?</span>
+                    <span class="tiny">Live ops assistance for scouting cycle.</span>
                     <button type="button">Start</button>
                 </div>
             </aside>
@@ -422,7 +437,7 @@
                     </div>
                 </div>
 
-                <div class="status" id="statusBox" role="status" aria-live="polite">Dashboard is waiting for a token.</div>
+                <div class="status" id="statusBox" role="status" aria-live="polite">Command center is waiting for a token.</div>
 
                 <section class="kpi-grid" id="kpiGrid">
                     <article class="kpi"><span class="kpi-label">Open Opportunities</span><span class="kpi-value" id="kpiOpen">-</span></article>
@@ -430,6 +445,8 @@
                     <article class="kpi"><span class="kpi-label">Inbox Messages</span><span class="kpi-value" id="kpiInbox">-</span></article>
                     <article class="kpi"><span class="kpi-label">Media Assets</span><span class="kpi-value" id="kpiMedia">-</span></article>
                 </section>
+
+                <div class="tiny">Live board for planning, assignment, and reporting across opportunities.</div>
 
                 <div class="tab-row">
                     <button class="tab-btn active" id="tabPlanBtn" type="button">Scouting plan</button>
