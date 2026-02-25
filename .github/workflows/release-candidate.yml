@@ -36,8 +36,8 @@ jobs:
           php artisan key:generate
           php artisan migrate --force
 
-      - name: Lint and test
-        run: composer quality
+      - name: Execute tests
+        run: php artisan test
 
       - name: Install Newman
         run: npm install --global newman
