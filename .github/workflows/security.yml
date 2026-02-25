@@ -5,7 +5,7 @@ on:
   pull_request:
   push:
     branches:
-      - master
+      - main
       - feat/scout-api-hardening
   schedule:
     - cron: '30 1 * * *'
