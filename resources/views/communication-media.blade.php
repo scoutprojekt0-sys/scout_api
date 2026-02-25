@@ -7,22 +7,32 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body>
-        <main class="ds-page ds-stack">
+        <a class="ds-skip-link" href="#commMain">Skip to messaging content</a>
+        <main id="commMain" class="ds-page ds-stack">
             <header class="ds-stack">
                 <h1 class="ds-h1">Messaging + Media</h1>
-                <p class="ds-caption">Inbox/sent/compose ve media upload/list/delete akislarini tek ekranda yonet.</p>
+                <p class="ds-caption">Manage inbox/sent, compose flow and media upload/list/delete in one screen.</p>
             </header>
+
+            <section class="ds-card ds-stack" aria-labelledby="commQuickStartTitle">
+                <h2 id="commQuickStartTitle" class="ds-h2">Quick Start</h2>
+                <ol class="ds-stack">
+                    <li>Paste a bearer token and click <strong>Load Messaging + Media</strong>.</li>
+                    <li>Send one test message and confirm inbox/sent visibility.</li>
+                    <li>Upload and then delete one media file to validate full lifecycle.</li>
+                </ol>
+            </section>
 
             <section class="ds-card ds-stack">
                 <div class="ds-field">
                     <label class="ds-label" for="tokenInput">Bearer Token</label>
                     <input id="tokenInput" class="ds-input" type="text" placeholder="1|xxxxxxxx..." autocomplete="off">
-                    <p class="ds-help">Token sadece API istekleri icin kullanilir, depolanmaz.</p>
+                    <p class="ds-help">Token is used only for API calls in this page and is not stored.</p>
                 </div>
                 <div class="ds-button-row">
                     <button class="ds-btn ds-btn-primary" id="bootstrapBtn" type="button">Load Messaging + Media</button>
                 </div>
-                <div id="globalStatus"></div>
+                <div id="globalStatus" role="status" aria-live="polite"></div>
             </section>
 
             <section class="ds-grid lg:grid-cols-2">
@@ -101,7 +111,7 @@
                     <div class="ds-button-row">
                         <button class="ds-btn ds-btn-secondary" id="loadInboxBtn" type="button">Load Inbox</button>
                     </div>
-                    <div id="inboxWrap" class="ds-stack"></div>
+                    <div id="inboxWrap" class="ds-stack" aria-live="polite"></div>
                 </article>
 
                 <article class="ds-card ds-stack">
@@ -142,7 +152,7 @@
                     <div class="ds-button-row">
                         <button class="ds-btn ds-btn-secondary" id="loadSentBtn" type="button">Load Sent</button>
                     </div>
-                    <div id="sentWrap" class="ds-stack"></div>
+                    <div id="sentWrap" class="ds-stack" aria-live="polite"></div>
                 </article>
             </section>
 
@@ -184,7 +194,7 @@
                 <div class="ds-button-row">
                     <button class="ds-btn ds-btn-secondary" id="loadMediaBtn" type="button">Load Media</button>
                 </div>
-                <div id="mediaWrap" class="grid gap-3 md:grid-cols-2 lg:grid-cols-3"></div>
+                <div id="mediaWrap" class="grid gap-3 md:grid-cols-2 lg:grid-cols-3" aria-live="polite"></div>
             </section>
         </main>
 
@@ -229,6 +239,7 @@
                     : kind === 'warn' ? 'ds-state ds-state-empty'
                     : kind === 'empty' ? 'ds-state ds-state-empty'
                     : 'ds-state ds-state-loading';
+                node.setAttribute('aria-busy', kind === 'loading' ? 'true' : 'false');
                 node.innerHTML = `<div class="${klass}">${escapeHtml(text)}</div>`;
             }
 
@@ -247,7 +258,7 @@
 
             async function bootstrap() {
                 if (!tokenInput.value.trim()) {
-                    renderGlobal('warn', 'Bearer token girin.');
+                    renderGlobal('warn', 'Enter a bearer token.');
                     return;
                 }
 
@@ -255,9 +266,9 @@
                     const me = await api('/api/auth/me');
                     state.me = me.data;
                     await Promise.all([loadInbox(), loadSent(), loadMedia()]);
-                    renderGlobal('success', 'Messaging + media yuklendi.');
+                    renderGlobal('success', 'Messaging and media data loaded.');
                 } catch (error) {
-                    renderGlobal('error', error.message || 'Yukleme basarisiz.');
+                    renderGlobal('error', error.message || 'Messaging and media could not be loaded.');
                 }
             }
 

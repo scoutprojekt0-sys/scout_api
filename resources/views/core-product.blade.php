@@ -7,22 +7,32 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body>
-        <main class="ds-page ds-stack">
+        <a class="ds-skip-link" href="#coreMain">Skip to core content</a>
+        <main id="coreMain" class="ds-page ds-stack">
             <header class="ds-stack">
                 <h1 class="ds-h1">Core Product UX</h1>
-                <p class="ds-caption">Firsatlar, basvuru akisi ve profil guncelleme ekranlari.</p>
+                <p class="ds-caption">Opportunities, applications and profile updates in one operational flow.</p>
             </header>
+
+            <section class="ds-card ds-stack" aria-labelledby="coreQuickStartTitle">
+                <h2 id="coreQuickStartTitle" class="ds-h2">Quick Start</h2>
+                <ol class="ds-stack">
+                    <li>Paste a valid bearer token.</li>
+                    <li>Click <strong>Load Core Flow</strong> to load profile, opportunities and applications.</li>
+                    <li>Use filters, then share URL query state for fast role-based UAT review.</li>
+                </ol>
+            </section>
 
             <section class="ds-card ds-stack">
                 <div class="ds-field">
                     <label class="ds-label" for="tokenInput">Bearer Token</label>
                     <input id="tokenInput" class="ds-input" type="text" placeholder="1|xxxxxxxx..." autocomplete="off">
-                    <p class="ds-help">Token sadece bu sayfada API istegi icin kullanilir.</p>
+                    <p class="ds-help">Token is used only for requests on this page and is never persisted.</p>
                 </div>
                 <div class="ds-button-row">
                     <button class="ds-btn ds-btn-primary" id="bootstrapBtn" type="button">Load Core Flow</button>
                 </div>
-                <div id="globalStatus"></div>
+                <div id="globalStatus" role="status" aria-live="polite"></div>
             </section>
 
             <section class="ds-grid lg:grid-cols-3">
@@ -103,7 +113,7 @@
                         <button class="ds-btn ds-btn-primary" id="applyFiltersBtn" type="button">Apply Filters</button>
                         <button class="ds-btn ds-btn-secondary" id="resetFiltersBtn" type="button">Reset</button>
                     </div>
-                    <div id="opportunitiesWrap" class="ds-stack"></div>
+                    <div id="opportunitiesWrap" class="ds-stack" aria-live="polite"></div>
                     <div class="ds-button-row ds-sticky-actions">
                         <button class="ds-btn ds-btn-secondary" id="oppPrevBtn" type="button">Prev</button>
                         <button class="ds-btn ds-btn-secondary" id="oppNextBtn" type="button">Next</button>
@@ -153,7 +163,7 @@
                 <div class="ds-button-row">
                     <button class="ds-btn ds-btn-primary" id="loadApplicationsBtn" type="button">Load Applications</button>
                 </div>
-                <div id="applicationsWrap" class="ds-stack"></div>
+                <div id="applicationsWrap" class="ds-stack" aria-live="polite"></div>
                 <div class="ds-button-row ds-sticky-actions">
                     <button class="ds-btn ds-btn-secondary" id="appPrevBtn" type="button">Prev</button>
                     <button class="ds-btn ds-btn-secondary" id="appNextBtn" type="button">Next</button>
@@ -276,6 +286,7 @@
                 const klass = kind === 'error' ? 'ds-state ds-state-error'
                     : kind === 'empty' ? 'ds-state ds-state-empty'
                     : 'ds-state ds-state-loading';
+                node.setAttribute('aria-busy', kind === 'loading' ? 'true' : 'false');
                 node.innerHTML = `<div class="${klass}">${escapeHtml(text)}</div>`;
             }
 
@@ -333,7 +344,7 @@
                 }
 
                 await api('/api/auth/me', 'PUT', payload);
-                notify('success', 'Profile guncellendi.');
+                notify('success', 'Profile updated successfully.');
                 await loadProfile();
             }
 
@@ -482,7 +493,7 @@
 
             async function bootstrap() {
                 if (!tokenInput.value.trim()) {
-                    notify('warn', 'Lutfen bearer token girin.');
+                    notify('warn', 'Enter a bearer token to continue.');
                     return;
                 }
 
@@ -490,9 +501,9 @@
                     await loadProfile();
                     await loadOpportunities();
                     await loadApplications();
-                    notify('success', 'Core flow yuklendi.');
+                    notify('success', 'Core flow loaded.');
                 } catch (error) {
-                    notify('error', error.message || 'Yukleme basarisiz.');
+                    notify('error', error.message || 'Core flow could not be loaded.');
                 }
             }
 

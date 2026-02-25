@@ -162,6 +162,8 @@ CI guvenlik kontrolleri:
 - `docs/security`: security strategy and hardening notes
 - `docs/security/SECURITY_CHECKLIST_FINAL.md`: final security completion checklist
 - `docs/security/PENTEST_SCENARIOS.md`: pentest-style scenario set
+- `docs/uat/UAT_WEEK7_SIGNOFF.md`: week 7 role-based UAT sign-off
+- `docs/accessibility/WEEK7_ACCESSIBILITY_CHECKLIST.md`: week 7 accessibility pass report
 - `docs/DESIGN_SYSTEM_V1.md`: design tokens and auth component rules
 - `docs/ROADMAP_WEEK1_WEEK2.md`: 2 haftalik delivery plani
 - `docs/ROADMAP_WEEK3_WEEK4.md`: core UX + messaging/media delivery plani
@@ -226,3 +228,13 @@ CI:
   - `php artisan migrate`
 - Opportunity list endpoint now uses short-TTL cache with versioned invalidation on create/update/delete.
 - Request metrics middleware adds `X-Request-Id` and writes request summary/alerts to `ops` log channel.
+
+## Week 7 UAT + Content Polish Notes
+
+- Added Quick Start onboarding blocks to:
+  - `/auth/sessions`
+  - `/app/core`
+  - `/app/communication`
+- Added skip links and improved keyboard focus-visible styling.
+- Added live status regions (`role="status"`, `aria-live="polite"`) and async `aria-busy` toggles.
+- Added UAT and accessibility evidence docs under `docs/uat` and `docs/accessibility`.

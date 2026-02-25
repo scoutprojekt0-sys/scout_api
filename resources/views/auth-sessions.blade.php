@@ -7,24 +7,34 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body>
-        <main class="ds-page ds-stack">
+        <a class="ds-skip-link" href="#sessionMain">Skip to session table</a>
+        <main id="sessionMain" class="ds-page ds-stack">
             <header class="ds-stack">
                 <h1 class="ds-h1">Session / Device Manager</h1>
-                <p class="ds-caption">Aktif oturumlari goruntule, tekli oturum kapat veya tum diger cihazlardan cikis yap.</p>
+                <p class="ds-caption">Review active sessions, revoke one device, or sign out all other devices.</p>
             </header>
+
+            <section class="ds-card ds-stack" aria-labelledby="sessionQuickStartTitle">
+                <h2 id="sessionQuickStartTitle" class="ds-h2">Quick Start</h2>
+                <ol class="ds-stack">
+                    <li>Paste bearer token and click <strong>Load Sessions</strong>.</li>
+                    <li>Refresh current session to verify token rotation behavior.</li>
+                    <li>Revoke a non-current device and confirm session list updates.</li>
+                </ol>
+            </section>
 
             <section class="ds-card ds-stack">
                 <div class="ds-field">
                     <label class="ds-label" for="token">Bearer Token</label>
                     <input id="token" class="ds-input" type="text" placeholder="1|xxxxxxxx..." autocomplete="off">
-                    <p class="ds-help">Token sadece bu sayfada request icin kullanilir, depolanmaz.</p>
+                    <p class="ds-help">Token is used only for this page requests and is not stored.</p>
                 </div>
                 <div class="ds-button-row">
                     <button class="ds-btn ds-btn-primary" id="loadBtn" type="button">Load Sessions</button>
                     <button class="ds-btn ds-btn-secondary" id="refreshBtn" type="button">Refresh Current Session</button>
                     <button class="ds-btn ds-btn-secondary" id="logoutOthersBtn" type="button">Logout Other Devices</button>
                 </div>
-                <div id="status"></div>
+                <div id="status" role="status" aria-live="polite"></div>
             </section>
 
             <section class="ds-card ds-stack">
@@ -66,9 +76,9 @@
             }
 
             function setStatus(type, text) {
-                const klass = type === 'error' ? 'ds-state ds-state-error'
-                    : type === 'warn' ? 'ds-state ds-state-empty'
-                    : 'ds-state ds-state-loading';
+                const klass = type === 'error' ? 'ds-alert ds-alert-danger'
+                    : type === 'warn' ? 'ds-alert ds-alert-warning'
+                    : 'ds-alert ds-alert-success';
                 statusBox.innerHTML = `<div class="${klass}">${escapeHtml(text)}</div>`;
             }
 
@@ -76,6 +86,7 @@
                 const klass = type === 'error' ? 'ds-state ds-state-error'
                     : type === 'empty' ? 'ds-state ds-state-empty'
                     : 'ds-state ds-state-loading';
+                sessionRows.setAttribute('aria-busy', type === 'loading' ? 'true' : 'false');
                 sessionRows.innerHTML = `<tr><td colspan="5" class="p-2"><div class="${klass}">${escapeHtml(text)}</div></td></tr>`;
             }
 
