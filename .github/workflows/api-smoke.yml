@@ -81,3 +81,10 @@ jobs:
             --environment postman/Scout_API_E2E.postman_environment.json \
             --env-var base_url=http://127.0.0.1:8000 \
             --env-var media_file_path=/tmp/sample.jpg
+
+      - name: Run Postman E2E - Communication and Media (Newman)
+        run: |
+          newman run postman/Scout_API_E2E_Communication_Media.postman_collection.json \
+            --environment postman/Scout_API_E2E.postman_environment.json \
+            --env-var base_url=http://127.0.0.1:8000 \
+            --env-var media_file_path=/tmp/sample.jpg

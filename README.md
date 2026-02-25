@@ -75,6 +75,7 @@ php artisan serve
 E2E akis icin Postman collection:
 
 - postman/Scout_API_E2E.postman_collection.json
+- postman/Scout_API_E2E_Communication_Media.postman_collection.json
 
 Not: Media - Upload istegi icin media_file_path degiskenine lokal bir dosya yolu verin.
 
@@ -82,6 +83,12 @@ Newman ile collection calistirma:
 
 ```bash
 npm run test:api
+```
+
+Communication + media E2E:
+
+```bash
+npm run test:api:extended
 ```
 
 Local override ile calistirma:
@@ -126,6 +133,14 @@ Auth session endpointleri:
 
 Session revoke olaylari `audit_events` tablosuna yazilir.
 
+Core UX query parametreleri:
+
+- `GET /api/opportunities`: `status`, `position`, `city`, `page`, `per_page`, `sort_by`, `sort_dir`
+- `GET /api/applications/incoming`: `status`, `page`, `per_page`, `sort_by`, `sort_dir`
+- `GET /api/applications/outgoing`: `status`, `page`, `per_page`, `sort_by`, `sort_dir`
+- `GET /api/contacts/inbox|sent`: `status`, `page`, `per_page`, `sort_by`, `sort_dir`
+- `GET /api/users/{id}/media`: `type`, `page`, `per_page`, `sort_by`, `sort_dir`
+
 CI guvenlik kontrolleri:
 
 - `.github/workflows/security.yml`
@@ -144,6 +159,7 @@ CI guvenlik kontrolleri:
 - `docs/security`: security strategy and hardening notes
 - `docs/DESIGN_SYSTEM_V1.md`: design tokens and auth component rules
 - `docs/ROADMAP_WEEK1_WEEK2.md`: 2 haftalik delivery plani
+- `docs/ROADMAP_WEEK3_WEEK4.md`: core UX + messaging/media delivery plani
 
 ## Environment Matrix
 
@@ -170,6 +186,8 @@ Auth design demo route:
 
 - `GET /auth/design-demo`
 - `GET /auth/sessions`
+- `GET /app/core` (opportunities + applications + profile core flow UI)
+- `GET /app/communication` (messaging + media UX/API parity UI)
 
 ## Quality Gates
 
