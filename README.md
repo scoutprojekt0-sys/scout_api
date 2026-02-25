@@ -160,6 +160,7 @@ CI guvenlik kontrolleri:
 - `docs/DESIGN_SYSTEM_V1.md`: design tokens and auth component rules
 - `docs/ROADMAP_WEEK1_WEEK2.md`: 2 haftalik delivery plani
 - `docs/ROADMAP_WEEK3_WEEK4.md`: core UX + messaging/media delivery plani
+- `docs/ROADMAP_WEEK5_WEEK8.md`: performance, security final, UAT ve launch plani
 
 ## Environment Matrix
 
