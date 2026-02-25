@@ -156,6 +156,7 @@ CI guvenlik kontrolleri:
 - `docs/api`: API contract and error mapping notes
 - `docs/runbooks`: deploy/rollback/incident runbooks
 - `docs/runbooks/branch-protection.md`: main branch required check policy
+- `docs/runbooks/monitoring-alerts.md`: ops log, alert and first-response guide
 - `docs/security`: security strategy and hardening notes
 - `docs/DESIGN_SYSTEM_V1.md`: design tokens and auth component rules
 - `docs/ROADMAP_WEEK1_WEEK2.md`: 2 haftalik delivery plani
@@ -175,6 +176,16 @@ CI guvenlik kontrolleri:
 | `SANCTUM_TOKEN_EXPIRATION` | Optional | Optional | Optional | minutes, default `10080` |
 | `LOG_SECURITY_LEVEL` | Optional | Optional | Optional | default `info` |
 | `LOG_SECURITY_DAYS` | Optional | Optional | Optional | default `30` |
+| `LOG_OPS_LEVEL` | Optional | Optional | Optional | default `info` |
+| `LOG_OPS_DAYS` | Optional | Optional | Optional | default `14` |
+| `MONITOR_SLOW_REQUEST_MS` | Optional | Optional | Optional | default `800` |
+| `OPPORTUNITIES_CACHE_ENABLED` | Optional | Optional | Optional | default `true` |
+| `OPPORTUNITIES_CACHE_TTL_SECONDS` | Optional | Optional | Optional | default `60` |
+| `RATE_LIMIT_AUTH_PER_MINUTE` | Optional | Optional | Optional | default `5` |
+| `RATE_LIMIT_API_READ_PER_MINUTE` | Optional | Optional | Optional | default `120` |
+| `RATE_LIMIT_API_WRITE_PER_MINUTE` | Optional | Optional | Optional | default `40` |
+| `AUTH_FAILED_ATTEMPTS_BEFORE_LOCK` | Optional | Optional | Optional | default `5` |
+| `AUTH_LOCK_SECONDS` | Optional | Optional | Optional | default `900` |
 
 Production boot-time validation now fails fast if these are missing:
 
@@ -204,3 +215,10 @@ CI:
 - `.github/workflows/security.yml`
 - `.github/workflows/api-smoke.yml`
 - `.github/workflows/codeql.yml`
+
+## Week 5 Reliability Notes
+
+- Run migration for performance indexes:
+  - `php artisan migrate`
+- Opportunity list endpoint now uses short-TTL cache with versioned invalidation on create/update/delete.
+- Request metrics middleware adds `X-Request-Id` and writes request summary/alerts to `ops` log channel.

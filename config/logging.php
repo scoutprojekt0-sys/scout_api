@@ -81,6 +81,14 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'ops' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/ops.log'),
+            'level' => config('scout.logging.ops_level', 'info'),
+            'days' => (int) config('scout.logging.ops_days', 14),
+            'replace_placeholders' => true,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
@@ -81,9 +82,7 @@ class OpportunityController extends Controller
 
         $query->orderBy($sortColumnMap[$sortBy], $sortDir);
 
-        $opportunities = $query->paginate($perPage);
-
-        return response()->json([
+        $payload = [
             'ok' => true,
             'filters' => [
                 'status' => $validated['status'] ?? null,
@@ -95,8 +94,39 @@ class OpportunityController extends Controller
                 'sort_by' => $sortBy,
                 'sort_dir' => $sortDir,
             ],
-            'data' => $opportunities,
-        ]);
+        ];
+
+        $cacheEnabled = (bool) config('scout.performance.opportunities_cache_enabled', true);
+        if ($cacheEnabled) {
+            $ttlSeconds = max(1, (int) config('scout.performance.opportunities_cache_ttl_seconds', 60));
+            $version = (int) Cache::get('opportunities:index:cache_version', 1);
+            $cacheKey = 'opportunities:index:v'.$version.':'.md5(json_encode([
+                'status' => $validated['status'] ?? null,
+                'position' => $validated['position'] ?? null,
+                'city' => $validated['city'] ?? null,
+                'age_min' => $validated['age_min'] ?? null,
+                'age_max' => $validated['age_max'] ?? null,
+                'team_user_id' => $validated['team_user_id'] ?? null,
+                'sort_by' => $sortBy,
+                'sort_dir' => $sortDir,
+                'page' => (int) ($validated['page'] ?? 1),
+                'per_page' => $perPage,
+            ]));
+
+            $cached = Cache::get($cacheKey);
+            if (is_array($cached)) {
+                return response()->json($cached);
+            }
+
+            $payload['data'] = $query->paginate($perPage)->toArray();
+            Cache::put($cacheKey, $payload, now()->addSeconds($ttlSeconds));
+
+            return response()->json($payload);
+        }
+
+        $payload['data'] = $query->paginate($perPage);
+
+        return response()->json($payload);
     }
 
     public function store(Request $request): JsonResponse
@@ -133,6 +163,7 @@ class OpportunityController extends Controller
         ]);
 
         $created = DB::table('opportunities')->where('id', $id)->first();
+        $this->bumpIndexCacheVersion();
 
         return response()->json([
             'ok' => true,
@@ -218,6 +249,7 @@ class OpportunityController extends Controller
             ]);
 
         $updated = DB::table('opportunities')->where('id', $id)->first();
+        $this->bumpIndexCacheVersion();
 
         return response()->json([
             'ok' => true,
@@ -245,10 +277,20 @@ class OpportunityController extends Controller
         }
 
         DB::table('opportunities')->where('id', $id)->delete();
+        $this->bumpIndexCacheVersion();
 
         return response()->json([
             'ok' => true,
             'message' => 'Ilan silindi.',
         ]);
+    }
+
+    private function bumpIndexCacheVersion(): void
+    {
+        $key = 'opportunities:index:cache_version';
+        if (!Cache::has($key)) {
+            Cache::forever($key, 1);
+        }
+        Cache::increment($key);
     }
 }

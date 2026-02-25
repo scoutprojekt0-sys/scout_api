@@ -33,14 +33,19 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('auth', function (Request $request) {
             $email = strtolower((string) $request->input('email'));
             $key = $email !== '' ? $email.'|'.$request->ip() : $request->ip();
+            $limit = (int) config('scout.rate_limits.auth_per_minute', 5);
 
-            return [Limit::perMinute(5)->by($key)];
+            return [Limit::perMinute($limit)->by($key)];
         });
 
         RateLimiter::for('api', function (Request $request) {
             $key = $request->user()?->id ? 'user:'.$request->user()->id : 'ip:'.$request->ip();
+            $isRead = in_array(strtoupper($request->method()), ['GET', 'HEAD', 'OPTIONS'], true);
+            $perMinute = $isRead
+                ? (int) config('scout.rate_limits.api_read_per_minute', 120)
+                : (int) config('scout.rate_limits.api_write_per_minute', 40);
 
-            return [Limit::perMinute(60)->by($key)];
+            return [Limit::perMinute($perMinute)->by($key)];
         });
     }
 

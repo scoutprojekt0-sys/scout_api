@@ -56,6 +56,8 @@ class AuthController extends Controller
         $ip = (string) $request->ip();
         $lockKey = 'auth-lock:'.$email.'|'.$ip;
         $attemptKey = 'auth-attempt:'.$email.'|'.$ip;
+        $maxFailedAttempts = (int) config('scout.rate_limits.auth_failed_attempts_before_lock', 5);
+        $lockSeconds = (int) config('scout.rate_limits.auth_lock_seconds', 15 * 60);
 
         if (RateLimiter::tooManyAttempts($lockKey, 1)) {
             $seconds = RateLimiter::availableIn($lockKey);
@@ -72,11 +74,11 @@ class AuthController extends Controller
         $user = User::query()->where('email', $email)->first();
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
-            RateLimiter::hit($attemptKey, 15 * 60);
+            RateLimiter::hit($attemptKey, $lockSeconds);
             $attempts = RateLimiter::attempts($attemptKey);
 
-            if ($attempts >= 5) {
-                RateLimiter::hit($lockKey, 15 * 60);
+            if ($attempts >= $maxFailedAttempts) {
+                RateLimiter::hit($lockKey, $lockSeconds);
                 RateLimiter::clear($attemptKey);
             }
 
@@ -84,7 +86,7 @@ class AuthController extends Controller
                 'email' => $email,
                 'ip' => $ip,
                 'attempts' => $attempts,
-                'locked' => $attempts >= 5,
+                'locked' => $attempts >= $maxFailedAttempts,
             ]);
 
             return response()->json([
