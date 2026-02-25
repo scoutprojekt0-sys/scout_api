@@ -110,3 +110,6 @@ Kaynak ulasilamazsa endpoint otomatik olarak:
 1. acik opportunities kayitlarina duser
 2. onlar da yoksa statik fallback haber dondurur
 
+## Operations
+
+- `docs/runbooks/CI_RULESET_ALIGNMENT.md`: required check names, ruleset alignment, and PR merge-block recovery steps.
