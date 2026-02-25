@@ -3,8 +3,8 @@ name: Tests
 on:
   push:
     branches:
-      - master
-      - '*.x'
+      - feat/scout-api-hardening
+      - fix/rc-workflow-to-feat
   pull_request:
   schedule:
     - cron: '0 0 * * *'

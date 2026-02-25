@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - feat/scout-api-hardening
+      - fix/rc-workflow-to-feat
 
 permissions:
   contents: read

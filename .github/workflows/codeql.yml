@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - feat/scout-api-hardening
+      - fix/rc-workflow-to-feat
   pull_request:
   schedule:
     - cron: '45 2 * * 1'
