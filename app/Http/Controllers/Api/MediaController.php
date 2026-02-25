@@ -37,13 +37,34 @@ class MediaController extends Controller
 
     public function indexByUser(int $id): JsonResponse
     {
-        $media = Media::query()
-            ->where('user_id', $id)
-            ->orderByDesc('created_at')
-            ->paginate(20);
+        $validated = request()->validate([
+            'type' => ['nullable', 'in:image,video'],
+            'sort_by' => ['nullable', 'in:created_at,title,type'],
+            'sort_dir' => ['nullable', 'in:asc,desc'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $query = Media::query()->where('user_id', $id);
+        if (!empty($validated['type'])) {
+            $query->where('type', $validated['type']);
+        }
+
+        $sortBy = $validated['sort_by'] ?? 'created_at';
+        $sortDir = $validated['sort_dir'] ?? 'desc';
+        $perPage = (int) ($validated['per_page'] ?? 20);
+
+        $media = $query
+            ->orderBy($sortBy, $sortDir)
+            ->paginate($perPage);
 
         return response()->json([
             'ok' => true,
+            'filters' => [
+                'type' => $validated['type'] ?? null,
+                'sort_by' => $sortBy,
+                'sort_dir' => $sortDir,
+            ],
             'data' => $media,
         ]);
     }

@@ -45,6 +45,8 @@ class ContactController extends Controller
 
         $validated = $request->validated();
         $perPage = (int) ($validated['per_page'] ?? 20);
+        $sortBy = $validated['sort_by'] ?? 'created_at';
+        $sortDir = $validated['sort_dir'] ?? 'desc';
 
         $query = DB::table('contacts')
             ->join('users as sender', 'sender.id', '=', 'contacts.from_user_id')
@@ -65,12 +67,19 @@ class ContactController extends Controller
             $query->where('contacts.status', $validated['status']);
         }
 
-        $inbox = $query->orderByDesc('contacts.created_at')->paginate($perPage);
+        $sortColumnMap = [
+            'created_at' => 'contacts.created_at',
+            'status' => 'contacts.status',
+        ];
+
+        $inbox = $query->orderBy($sortColumnMap[$sortBy], $sortDir)->paginate($perPage);
 
         return response()->json([
             'ok' => true,
             'filters' => [
                 'status' => $validated['status'] ?? null,
+                'sort_by' => $sortBy,
+                'sort_dir' => $sortDir,
             ],
             'data' => $inbox,
         ]);
@@ -82,6 +91,8 @@ class ContactController extends Controller
 
         $validated = $request->validated();
         $perPage = (int) ($validated['per_page'] ?? 20);
+        $sortBy = $validated['sort_by'] ?? 'created_at';
+        $sortDir = $validated['sort_dir'] ?? 'desc';
 
         $query = DB::table('contacts')
             ->join('users as recipient', 'recipient.id', '=', 'contacts.to_user_id')
@@ -102,12 +113,19 @@ class ContactController extends Controller
             $query->where('contacts.status', $validated['status']);
         }
 
-        $sent = $query->orderByDesc('contacts.created_at')->paginate($perPage);
+        $sortColumnMap = [
+            'created_at' => 'contacts.created_at',
+            'status' => 'contacts.status',
+        ];
+
+        $sent = $query->orderBy($sortColumnMap[$sortBy], $sortDir)->paginate($perPage);
 
         return response()->json([
             'ok' => true,
             'filters' => [
                 'status' => $validated['status'] ?? null,
+                'sort_by' => $sortBy,
+                'sort_dir' => $sortDir,
             ],
             'data' => $sent,
         ]);

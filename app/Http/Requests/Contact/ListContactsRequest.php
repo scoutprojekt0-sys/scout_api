@@ -16,6 +16,8 @@ class ListContactsRequest extends FormRequest
     {
         return [
             'status' => ['nullable', Rule::in(['new', 'read', 'archived'])],
+            'sort_by' => ['nullable', Rule::in(['created_at', 'status'])],
+            'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
