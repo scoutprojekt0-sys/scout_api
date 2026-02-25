@@ -189,4 +189,118 @@
         background: #ffebeb;
         border-color: #f2bcbc;
     }
+
+    .ds-sticky-actions {
+        position: static;
+        z-index: auto;
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        padding: 0;
+    }
+
+    .ds-responsive-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .ds-responsive-table th,
+    .ds-responsive-table td {
+        vertical-align: top;
+    }
+
+    .ds-state {
+        border: 1px dashed var(--ds-color-border);
+        border-radius: 10px;
+        padding: var(--ds-space-4);
+        font-size: var(--ds-font-caption);
+    }
+
+    .ds-state-loading {
+        color: var(--ds-color-text-muted);
+        background: #f7f9fd;
+    }
+
+    .ds-state-empty {
+        color: #6c4300;
+        background: #fff8ec;
+        border-color: #f4d6a4;
+    }
+
+    .ds-state-error {
+        color: #7a1717;
+        background: #ffefef;
+        border-color: #f2bcbc;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --ds-font-h1: 1.6rem;
+        --ds-font-h2: 1.2rem;
+    }
+
+    .ds-page {
+        padding: var(--ds-space-5) var(--ds-space-3);
+    }
+
+    .ds-card {
+        padding: var(--ds-space-4);
+        border-radius: 12px;
+    }
+
+    .ds-stack {
+        gap: var(--ds-space-3);
+    }
+
+    .ds-btn {
+        min-height: 44px;
+        width: 100%;
+    }
+
+    .ds-button-row {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .ds-responsive-table thead {
+        display: none;
+    }
+
+    .ds-responsive-table tbody,
+    .ds-responsive-table tr,
+    .ds-responsive-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .ds-responsive-table tr {
+        border: 1px solid var(--ds-color-border);
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 10px;
+        background: #fff;
+    }
+
+    .ds-responsive-table td {
+        padding: 6px 0;
+        border: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .ds-responsive-table td::before {
+        content: attr(data-label) ": ";
+        font-weight: 600;
+        color: var(--ds-color-text-muted);
+    }
+
+    .ds-sticky-actions {
+        position: sticky;
+        bottom: 4px;
+        z-index: 5;
+        background: color-mix(in srgb, var(--ds-color-surface) 88%, white 12%);
+        border: 1px solid var(--ds-color-border);
+        border-radius: 12px;
+        padding: var(--ds-space-2);
+    }
 }

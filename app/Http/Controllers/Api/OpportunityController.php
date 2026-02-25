@@ -20,6 +20,8 @@ class OpportunityController extends Controller
             'age_min' => ['nullable', 'integer', 'min:10', 'max:60'],
             'age_max' => ['nullable', 'integer', 'min:10', 'max:60'],
             'team_user_id' => ['nullable', 'integer', 'min:1'],
+            'sort_by' => ['nullable', Rule::in(['created_at', 'title', 'status', 'city'])],
+            'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
@@ -68,9 +70,18 @@ class OpportunityController extends Controller
             $query->where('opportunities.age_max', '<=', (int) $validated['age_max']);
         }
 
-        $opportunities = $query
-            ->orderByDesc('opportunities.created_at')
-            ->paginate($perPage);
+        $sortBy = $validated['sort_by'] ?? 'created_at';
+        $sortDir = $validated['sort_dir'] ?? 'desc';
+        $sortColumnMap = [
+            'created_at' => 'opportunities.created_at',
+            'title' => 'opportunities.title',
+            'status' => 'opportunities.status',
+            'city' => 'opportunities.city',
+        ];
+
+        $query->orderBy($sortColumnMap[$sortBy], $sortDir);
+
+        $opportunities = $query->paginate($perPage);
 
         return response()->json([
             'ok' => true,
@@ -81,6 +92,8 @@ class OpportunityController extends Controller
                 'age_min' => $validated['age_min'] ?? null,
                 'age_max' => $validated['age_max'] ?? null,
                 'team_user_id' => $validated['team_user_id'] ?? null,
+                'sort_by' => $sortBy,
+                'sort_dir' => $sortDir,
             ],
             'data' => $opportunities,
         ]);

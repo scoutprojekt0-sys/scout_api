@@ -29,8 +29,8 @@
 
             <section class="ds-card ds-stack">
                 <h2 class="ds-h2">Active Sessions</h2>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
+                <div>
+                    <table class="ds-responsive-table w-full text-left text-sm">
                         <thead>
                             <tr>
                                 <th class="p-2">Device</th>
@@ -66,10 +66,17 @@
             }
 
             function setStatus(type, text) {
-                const klass = type === 'error' ? 'ds-alert ds-alert-danger'
-                    : type === 'warn' ? 'ds-alert ds-alert-warning'
-                    : 'ds-alert ds-alert-success';
-                statusBox.innerHTML = `<div class="${klass}">${text}</div>`;
+                const klass = type === 'error' ? 'ds-state ds-state-error'
+                    : type === 'warn' ? 'ds-state ds-state-empty'
+                    : 'ds-state ds-state-loading';
+                statusBox.innerHTML = `<div class="${klass}">${escapeHtml(text)}</div>`;
+            }
+
+            function setSessionsState(type, text) {
+                const klass = type === 'error' ? 'ds-state ds-state-error'
+                    : type === 'empty' ? 'ds-state ds-state-empty'
+                    : 'ds-state ds-state-loading';
+                sessionRows.innerHTML = `<tr><td colspan="5" class="p-2"><div class="${klass}">${escapeHtml(text)}</div></td></tr>`;
             }
 
             function fmtDate(value) {
@@ -93,10 +100,13 @@
                     return;
                 }
 
+                setSessionsState('loading', 'Session listesi yukleniyor...');
+
                 const res = await fetch('/api/auth/sessions', { headers: authHeaders() });
-                const data = await res.json();
+                const data = await res.json().catch(() => ({}));
                 if (!res.ok || !data.ok) {
                     setStatus('error', data.message || 'Sessions yuklenemedi.');
+                    setSessionsState('error', data.message || 'Session listesi yuklenemedi.');
                     return;
                 }
 
@@ -106,16 +116,19 @@
                         : `<button class="ds-btn ds-btn-secondary revoke-btn" data-id="${session.id}" type="button">Revoke</button>`;
                     return `
                         <tr>
-                            <td class="p-2">${escapeHtml(session.device_label || '-')}</td>
-                            <td class="p-2">${escapeHtml(session.ip_address || '-')}</td>
-                            <td class="p-2">${escapeHtml(session.user_agent || '-')}</td>
-                            <td class="p-2">${escapeHtml(fmtDate(session.last_used_at || session.created_at))}</td>
-                            <td class="p-2">${revokeBtn}</td>
+                            <td class="p-2" data-label="Device">${escapeHtml(session.device_label || '-')}</td>
+                            <td class="p-2" data-label="IP">${escapeHtml(session.ip_address || '-')}</td>
+                            <td class="p-2" data-label="User Agent">${escapeHtml(session.user_agent || '-')}</td>
+                            <td class="p-2" data-label="Last Active">${escapeHtml(fmtDate(session.last_used_at || session.created_at))}</td>
+                            <td class="p-2" data-label="Action">${revokeBtn}</td>
                         </tr>
                     `;
                 });
 
-                sessionRows.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="5" class="p-2 ds-caption">Aktif oturum yok.</td></tr>';
+                sessionRows.innerHTML = rows.length ? rows.join('') : '';
+                if (!rows.length) {
+                    setSessionsState('empty', 'Aktif oturum yok.');
+                }
                 setStatus('success', 'Session listesi guncellendi.');
             }
 

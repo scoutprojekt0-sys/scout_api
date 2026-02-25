@@ -68,6 +68,14 @@ class ApplicationController extends Controller
 
         $validated = $request->validated();
         $perPage = (int) ($validated['per_page'] ?? 20);
+        $sortBy = (string) ($request->query('sort_by', 'created_at'));
+        $sortDir = (string) ($request->query('sort_dir', 'desc'));
+        if (!in_array($sortBy, ['created_at', 'status', 'opportunity_title'], true)) {
+            $sortBy = 'created_at';
+        }
+        if (!in_array($sortDir, ['asc', 'desc'], true)) {
+            $sortDir = 'desc';
+        }
 
         $query = DB::table('applications')
             ->join('opportunities', 'opportunities.id', '=', 'applications.opportunity_id')
@@ -89,12 +97,21 @@ class ApplicationController extends Controller
             $query->where('applications.status', $validated['status']);
         }
 
-        $incoming = $query->orderByDesc('applications.created_at')->paginate($perPage);
+        $sortColumnMap = [
+            'created_at' => 'applications.created_at',
+            'status' => 'applications.status',
+            'opportunity_title' => 'opportunities.title',
+        ];
+        $query->orderBy($sortColumnMap[$sortBy], $sortDir);
+
+        $incoming = $query->paginate($perPage);
 
         return response()->json([
             'ok' => true,
             'filters' => [
                 'status' => $validated['status'] ?? null,
+                'sort_by' => $sortBy,
+                'sort_dir' => $sortDir,
             ],
             'data' => $incoming,
         ]);
@@ -106,6 +123,14 @@ class ApplicationController extends Controller
 
         $validated = $request->validated();
         $perPage = (int) ($validated['per_page'] ?? 20);
+        $sortBy = (string) ($request->query('sort_by', 'created_at'));
+        $sortDir = (string) ($request->query('sort_dir', 'desc'));
+        if (!in_array($sortBy, ['created_at', 'status', 'opportunity_title'], true)) {
+            $sortBy = 'created_at';
+        }
+        if (!in_array($sortDir, ['asc', 'desc'], true)) {
+            $sortDir = 'desc';
+        }
 
         $query = DB::table('applications')
             ->join('opportunities', 'opportunities.id', '=', 'applications.opportunity_id')
@@ -127,12 +152,21 @@ class ApplicationController extends Controller
             $query->where('applications.status', $validated['status']);
         }
 
-        $outgoing = $query->orderByDesc('applications.created_at')->paginate($perPage);
+        $sortColumnMap = [
+            'created_at' => 'applications.created_at',
+            'status' => 'applications.status',
+            'opportunity_title' => 'opportunities.title',
+        ];
+        $query->orderBy($sortColumnMap[$sortBy], $sortDir);
+
+        $outgoing = $query->paginate($perPage);
 
         return response()->json([
             'ok' => true,
             'filters' => [
                 'status' => $validated['status'] ?? null,
+                'sort_by' => $sortBy,
+                'sort_dir' => $sortDir,
             ],
             'data' => $outgoing,
         ]);
