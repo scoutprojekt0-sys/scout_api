@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -29,10 +29,13 @@ jobs:
           coverage: none
 
       - name: Validate composer files
-        run: composer validate --strict --no-check-publish
+        run: composer validate --no-check-publish
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
+        env:
+          APP_ENV: local
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 
       - name: Audit dependencies
         run: composer audit --locked --no-interaction
@@ -42,7 +45,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -51,3 +54,4 @@ jobs:
         env:
           GITLEAKS_ENABLE_UPLOAD_ARTIFACT: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

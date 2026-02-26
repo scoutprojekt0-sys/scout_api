@@ -23,7 +23,7 @@ class ApplicationController extends Controller
             ->where('status', 'open')
             ->first();
 
-        if (!$opportunity) {
+        if (! $opportunity) {
             return response()->json([
                 'ok' => false,
                 'message' => 'Ilan bulunamadi veya basvuruya kapali.',
@@ -70,10 +70,10 @@ class ApplicationController extends Controller
         $perPage = (int) ($validated['per_page'] ?? 20);
         $sortBy = (string) ($request->query('sort_by', 'created_at'));
         $sortDir = (string) ($request->query('sort_dir', 'desc'));
-        if (!in_array($sortBy, ['created_at', 'status', 'opportunity_title'], true)) {
+        if (! in_array($sortBy, ['created_at', 'status', 'opportunity_title'], true)) {
             $sortBy = 'created_at';
         }
-        if (!in_array($sortDir, ['asc', 'desc'], true)) {
+        if (! in_array($sortDir, ['asc', 'desc'], true)) {
             $sortDir = 'desc';
         }
 
@@ -93,7 +93,7 @@ class ApplicationController extends Controller
                 'players.city as player_city',
             ]);
 
-        if (!empty($validated['status'])) {
+        if (! empty($validated['status'])) {
             $query->where('applications.status', $validated['status']);
         }
 
@@ -125,10 +125,10 @@ class ApplicationController extends Controller
         $perPage = (int) ($validated['per_page'] ?? 20);
         $sortBy = (string) ($request->query('sort_by', 'created_at'));
         $sortDir = (string) ($request->query('sort_dir', 'desc'));
-        if (!in_array($sortBy, ['created_at', 'status', 'opportunity_title'], true)) {
+        if (! in_array($sortBy, ['created_at', 'status', 'opportunity_title'], true)) {
             $sortBy = 'created_at';
         }
-        if (!in_array($sortDir, ['asc', 'desc'], true)) {
+        if (! in_array($sortDir, ['asc', 'desc'], true)) {
             $sortDir = 'desc';
         }
 
@@ -148,7 +148,7 @@ class ApplicationController extends Controller
                 'teams.city as team_city',
             ]);
 
-        if (!empty($validated['status'])) {
+        if (! empty($validated['status'])) {
             $query->where('applications.status', $validated['status']);
         }
 
@@ -176,7 +176,7 @@ class ApplicationController extends Controller
     {
         $application = Application::query()->with('opportunity')->find($id);
 
-        if (!$application) {
+        if (! $application) {
             return response()->json([
                 'ok' => false,
                 'message' => 'Basvuru bulunamadi.',

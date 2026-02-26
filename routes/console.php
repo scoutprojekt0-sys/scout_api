@@ -27,7 +27,7 @@ Artisan::command('security:revoke-legacy-tokens {--dry-run}', function () {
 
     $count = count($legacyTokenIds);
 
-    if (!$dryRun && $count > 0) {
+    if (! $dryRun && $count > 0) {
         DB::table('personal_access_tokens')->whereIn('id', $legacyTokenIds)->delete();
     }
 

@@ -46,7 +46,7 @@ class MediaController extends Controller
         ]);
 
         $query = Media::query()->where('user_id', $id);
-        if (!empty($validated['type'])) {
+        if (! empty($validated['type'])) {
             $query->where('type', $validated['type']);
         }
 
@@ -73,7 +73,7 @@ class MediaController extends Controller
     {
         $media = Media::query()->find($id);
 
-        if (!$media) {
+        if (! $media) {
             return response()->json([
                 'ok' => false,
                 'message' => 'Media bulunamadi.',

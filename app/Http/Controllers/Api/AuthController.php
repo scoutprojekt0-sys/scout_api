@@ -73,7 +73,7 @@ class AuthController extends Controller
         /** @var User|null $user */
         $user = User::query()->where('email', $email)->first();
 
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             RateLimiter::hit($attemptKey, $lockSeconds);
             $attempts = RateLimiter::attempts($attemptKey);
 
@@ -337,7 +337,7 @@ class AuthController extends Controller
         }
 
         $token = $user->tokens()->where('id', $tokenId)->first();
-        if (!$token) {
+        if (! $token) {
             return response()->json([
                 'ok' => false,
                 'code' => 'session_not_found',
@@ -409,7 +409,7 @@ class AuthController extends Controller
 
     private function resolveBearerTokenId(?string $bearerToken): ?int
     {
-        if (!is_string($bearerToken) || !str_contains($bearerToken, '|')) {
+        if (! is_string($bearerToken) || ! str_contains($bearerToken, '|')) {
             return null;
         }
 

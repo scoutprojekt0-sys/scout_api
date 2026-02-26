@@ -28,6 +28,10 @@ Asagidaki degiskenleri Web servisine ekle:
 - `SESSION_DRIVER=file`
 - `CACHE_STORE=file`
 - `QUEUE_CONNECTION=sync`
+- `LOG_CHANNEL=ops`
+- `LOG_OPS_STACK=daily,alerts`
+- `ALERT_LOG_LEVEL=error`
+- `ALERT_SLACK_WEBHOOK_URL=<slack-incoming-webhook>`
 - `CORS_ALLOWED_ORIGINS=<landing-url>,http://localhost:3000,http://127.0.0.1:3000`
 - `SANCTUM_STATEFUL_DOMAINS=<landing-domain>,localhost,127.0.0.1`
 
@@ -48,3 +52,23 @@ Landing tarafinda `api_base` olarak bu backend URL'ini kullan:
 ```text
 https://<backend-domain>/api
 ```
+
+## 6) Staging CI/CD + Rollback
+
+GitHub Actions ile staging deploy ve rollback icin:
+
+- `.github/workflows/deploy-staging.yml`
+- `.github/workflows/rollback-staging.yml`
+- `docs/runbooks/STAGING_DEPLOY_ROLLBACK.md`
+
+Not: Workflow'lar `staging` environment secret'larini kullanir.
+
+## 7) Monitoring + Alerting
+
+Health endpointleri:
+- `/health/live`
+- `/health/ready`
+- `/up`
+
+Detayli operasyon adimlari:
+- `docs/runbooks/MONITORING_ALERTING.md`
