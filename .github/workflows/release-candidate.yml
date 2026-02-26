@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -80,3 +80,4 @@ jobs:
             --environment postman/Scout_API_E2E.postman_environment.json \
             --env-var base_url=http://127.0.0.1:8000 \
             --env-var media_file_path=/tmp/sample.jpg
+
