@@ -38,19 +38,19 @@ class TeamController extends Controller
                 'team_profiles.needs_text',
             ]);
 
-        if (!empty($validated['city'])) {
+        if (! empty($validated['city'])) {
             $query->where(function ($q) use ($validated) {
-                $q->where('users.city', 'like', '%' . $validated['city'] . '%')
-                    ->orWhere('team_profiles.city', 'like', '%' . $validated['city'] . '%');
+                $q->where('users.city', 'like', '%'.$validated['city'].'%')
+                    ->orWhere('team_profiles.city', 'like', '%'.$validated['city'].'%');
             });
         }
 
-        if (!empty($validated['league_level'])) {
-            $query->where('team_profiles.league_level', 'like', '%' . $validated['league_level'] . '%');
+        if (! empty($validated['league_level'])) {
+            $query->where('team_profiles.league_level', 'like', '%'.$validated['league_level'].'%');
         }
 
-        if (!empty($validated['needs_text'])) {
-            $query->where('team_profiles.needs_text', 'like', '%' . $validated['needs_text'] . '%');
+        if (! empty($validated['needs_text'])) {
+            $query->where('team_profiles.needs_text', 'like', '%'.$validated['needs_text'].'%');
         }
 
         $teams = $query
@@ -89,7 +89,7 @@ class TeamController extends Controller
             ])
             ->first();
 
-        if (!$team) {
+        if (! $team) {
             return response()->json([
                 'ok' => false,
                 'message' => 'Takim bulunamadi.',
@@ -105,7 +105,7 @@ class TeamController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $target = DB::table('users')->where('id', $id)->where('role', 'team')->first();
-        if (!$target) {
+        if (! $target) {
             return response()->json([
                 'ok' => false,
                 'message' => 'Takim bulunamadi.',
@@ -127,7 +127,7 @@ class TeamController extends Controller
             'team_name' => ['sometimes', 'string', 'min:2', 'max:140'],
             'league_level' => ['sometimes', 'nullable', 'string', 'max:60'],
             'team_city' => ['sometimes', 'nullable', 'string', 'max:80'],
-            'founded_year' => ['sometimes', 'nullable', 'integer', 'min:1800', 'max:' . now()->format('Y')],
+            'founded_year' => ['sometimes', 'nullable', 'integer', 'min:1800', 'max:'.now()->format('Y')],
             'needs_text' => ['sometimes', 'nullable', 'string', 'max:5000'],
         ]);
 

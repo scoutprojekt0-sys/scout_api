@@ -43,20 +43,20 @@ class PlayerController extends Controller
                 'player_profiles.bio',
             ]);
 
-        if (!empty($validated['position'])) {
-            $query->where('player_profiles.position', 'like', '%' . $validated['position'] . '%');
+        if (! empty($validated['position'])) {
+            $query->where('player_profiles.position', 'like', '%'.$validated['position'].'%');
         }
 
-        if (!empty($validated['city'])) {
-            $query->where('users.city', 'like', '%' . $validated['city'] . '%');
+        if (! empty($validated['city'])) {
+            $query->where('users.city', 'like', '%'.$validated['city'].'%');
         }
 
-        if (!empty($validated['age_min'])) {
+        if (! empty($validated['age_min'])) {
             $birthYearMax = $currentYear - (int) $validated['age_min'];
             $query->where('player_profiles.birth_year', '<=', $birthYearMax);
         }
 
-        if (!empty($validated['age_max'])) {
+        if (! empty($validated['age_max'])) {
             $birthYearMin = $currentYear - (int) $validated['age_max'];
             $query->where('player_profiles.birth_year', '>=', $birthYearMin);
         }
@@ -100,7 +100,7 @@ class PlayerController extends Controller
             ])
             ->first();
 
-        if (!$player) {
+        if (! $player) {
             return response()->json([
                 'ok' => false,
                 'message' => 'Oyuncu bulunamadi.',
@@ -116,7 +116,7 @@ class PlayerController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $target = DB::table('users')->where('id', $id)->where('role', 'player')->first();
-        if (!$target) {
+        if (! $target) {
             return response()->json([
                 'ok' => false,
                 'message' => 'Oyuncu bulunamadi.',
@@ -135,7 +135,7 @@ class PlayerController extends Controller
             'name' => ['sometimes', 'string', 'min:2', 'max:120'],
             'city' => ['sometimes', 'nullable', 'string', 'max:80'],
             'phone' => ['sometimes', 'nullable', 'string', 'max:30'],
-            'birth_year' => ['sometimes', 'nullable', 'integer', 'min:1950', 'max:' . now()->format('Y')],
+            'birth_year' => ['sometimes', 'nullable', 'integer', 'min:1950', 'max:'.now()->format('Y')],
             'position' => ['sometimes', 'nullable', 'string', 'max:40'],
             'dominant_foot' => ['sometimes', 'nullable', Rule::in(['left', 'right', 'both'])],
             'height_cm' => ['sometimes', 'nullable', 'integer', 'min:120', 'max:230'],

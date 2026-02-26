@@ -47,27 +47,27 @@ class OpportunityController extends Controller
                 'opportunities.updated_at',
             ]);
 
-        if (!empty($validated['status'])) {
+        if (! empty($validated['status'])) {
             $query->where('opportunities.status', $validated['status']);
         }
 
-        if (!empty($validated['position'])) {
-            $query->where('opportunities.position', 'like', '%' . $validated['position'] . '%');
+        if (! empty($validated['position'])) {
+            $query->where('opportunities.position', 'like', '%'.$validated['position'].'%');
         }
 
-        if (!empty($validated['city'])) {
-            $query->where('opportunities.city', 'like', '%' . $validated['city'] . '%');
+        if (! empty($validated['city'])) {
+            $query->where('opportunities.city', 'like', '%'.$validated['city'].'%');
         }
 
-        if (!empty($validated['team_user_id'])) {
+        if (! empty($validated['team_user_id'])) {
             $query->where('opportunities.team_user_id', (int) $validated['team_user_id']);
         }
 
-        if (!empty($validated['age_min'])) {
+        if (! empty($validated['age_min'])) {
             $query->where('opportunities.age_min', '>=', (int) $validated['age_min']);
         }
 
-        if (!empty($validated['age_max'])) {
+        if (! empty($validated['age_max'])) {
             $query->where('opportunities.age_max', '<=', (int) $validated['age_max']);
         }
 
@@ -194,7 +194,7 @@ class OpportunityController extends Controller
             ])
             ->first();
 
-        if (!$opportunity) {
+        if (! $opportunity) {
             return response()->json([
                 'ok' => false,
                 'message' => 'Ilan bulunamadi.',
@@ -210,7 +210,7 @@ class OpportunityController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $opportunity = DB::table('opportunities')->where('id', $id)->first();
-        if (!$opportunity) {
+        if (! $opportunity) {
             return response()->json([
                 'ok' => false,
                 'message' => 'Ilan bulunamadi.',
@@ -261,7 +261,7 @@ class OpportunityController extends Controller
     public function destroy(Request $request, int $id): JsonResponse
     {
         $opportunity = DB::table('opportunities')->where('id', $id)->first();
-        if (!$opportunity) {
+        if (! $opportunity) {
             return response()->json([
                 'ok' => false,
                 'message' => 'Ilan bulunamadi.',
@@ -288,7 +288,7 @@ class OpportunityController extends Controller
     private function bumpIndexCacheVersion(): void
     {
         $key = 'opportunities:index:cache_version';
-        if (!Cache::has($key)) {
+        if (! Cache::has($key)) {
             Cache::forever($key, 1);
         }
         Cache::increment($key);

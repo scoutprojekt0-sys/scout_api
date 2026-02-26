@@ -38,16 +38,16 @@ class StaffController extends Controller
                 'staff_profiles.bio',
             ]);
 
-        if (!empty($validated['role_type'])) {
+        if (! empty($validated['role_type'])) {
             $query->where('staff_profiles.role_type', $validated['role_type']);
         }
 
-        if (!empty($validated['organization'])) {
-            $query->where('staff_profiles.organization', 'like', '%' . $validated['organization'] . '%');
+        if (! empty($validated['organization'])) {
+            $query->where('staff_profiles.organization', 'like', '%'.$validated['organization'].'%');
         }
 
-        if (!empty($validated['city'])) {
-            $query->where('users.city', 'like', '%' . $validated['city'] . '%');
+        if (! empty($validated['city'])) {
+            $query->where('users.city', 'like', '%'.$validated['city'].'%');
         }
 
         $staff = $query
@@ -86,7 +86,7 @@ class StaffController extends Controller
             ])
             ->first();
 
-        if (!$staff) {
+        if (! $staff) {
             return response()->json([
                 'ok' => false,
                 'message' => 'Staff profili bulunamadi.',
@@ -106,7 +106,7 @@ class StaffController extends Controller
             ->whereIn('role', ['manager', 'coach', 'scout'])
             ->first();
 
-        if (!$target) {
+        if (! $target) {
             return response()->json([
                 'ok' => false,
                 'message' => 'Staff profili bulunamadi.',

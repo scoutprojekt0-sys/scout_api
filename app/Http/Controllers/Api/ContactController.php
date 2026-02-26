@@ -63,7 +63,7 @@ class ContactController extends Controller
                 'sender.role as sender_role',
             ]);
 
-        if (!empty($validated['status'])) {
+        if (! empty($validated['status'])) {
             $query->where('contacts.status', $validated['status']);
         }
 
@@ -109,7 +109,7 @@ class ContactController extends Controller
                 'recipient.role as recipient_role',
             ]);
 
-        if (!empty($validated['status'])) {
+        if (! empty($validated['status'])) {
             $query->where('contacts.status', $validated['status']);
         }
 
@@ -134,7 +134,7 @@ class ContactController extends Controller
     public function changeStatus(ChangeContactStatusRequest $request, int $id): JsonResponse
     {
         $contact = Contact::query()->find($id);
-        if (!$contact) {
+        if (! $contact) {
             return response()->json([
                 'ok' => false,
                 'message' => 'Mesaj bulunamadi.',
