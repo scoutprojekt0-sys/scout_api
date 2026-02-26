@@ -48,3 +48,7 @@ Landing tarafinda `api_base` olarak bu backend URL'ini kullan:
 ```text
 https://<backend-domain>/api
 ```
+
+## 6) Backup / Restore / DR
+
+- `docs/runbooks/BACKUP_RESTORE_DR.md`
