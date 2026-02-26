@@ -1,6 +1,9 @@
 <?php
 
+<<<<<<< HEAD
 use App\Http\Controllers\HealthController;
+=======
+>>>>>>> origin/feat/scout-api-hardening
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -11,9 +14,12 @@ Route::get('/', function () {
 
 Route::view('/admin', 'admin-dashboard');
 
+<<<<<<< HEAD
 Route::get('/health/live', [HealthController::class, 'live']);
 Route::get('/health/ready', [HealthController::class, 'ready']);
 
+=======
+>>>>>>> origin/feat/scout-api-hardening
 Route::get('/lang/{locale}', function (Request $request, string $locale): RedirectResponse {
     $supported = config('app.supported_locales', ['tr', 'en', 'de', 'es']);
     if (in_array($locale, $supported, true)) {
