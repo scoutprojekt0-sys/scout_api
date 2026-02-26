@@ -4,9 +4,43 @@
     "name": "Scout API E2E",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.environment.get('run_id')) {",
+          "  pm.environment.unset('team_token');",
+          "  pm.environment.unset('player_token');",
+          "  pm.environment.unset('team_user_id');",
+          "  pm.environment.unset('player_user_id');",
+          "  pm.environment.unset('opportunity_id');",
+          "  pm.environment.unset('application_id');",
+          "  pm.environment.set('run_id', Date.now().toString());",
+          "}"
+        ]
+      }
+    }
+  ],
   "item": [
     {
       "name": "Auth - Register Team",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('register team status', function () { pm.response.to.have.status(201); });",
+              "const res = pm.response.json();",
+              "pm.test('register team ok', function () { pm.expect(res.ok).to.eql(true); });",
+              "pm.environment.set('team_token', res.data.token);",
+              "pm.environment.set('team_user_id', String(res.data.user.id));"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -14,13 +48,28 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"Team User\",\n  \"email\": \"team@example.com\",\n  \"password\": \"Password123\",\n  \"password_confirmation\": \"Password123\",\n  \"role\": \"team\",\n  \"city\": \"Istanbul\"\n}"
+          "raw": "{\"name\":\"Team User {{run_id}}\",\"email\":\"team+{{run_id}}@example.com\",\"password\":\"Password123\",\"password_confirmation\":\"Password123\",\"role\":\"team\",\"city\":\"Istanbul\"}"
         },
         "url": "{{base_url}}/api/auth/register"
       }
     },
     {
       "name": "Auth - Register Player",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('register player status', function () { pm.response.to.have.status(201); });",
+              "const res = pm.response.json();",
+              "pm.test('register player ok', function () { pm.expect(res.ok).to.eql(true); });",
+              "pm.environment.set('player_token', res.data.token);",
+              "pm.environment.set('player_user_id', String(res.data.user.id));"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -28,13 +77,26 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"Player User\",\n  \"email\": \"player@example.com\",\n  \"password\": \"Password123\",\n  \"password_confirmation\": \"Password123\",\n  \"role\": \"player\",\n  \"city\": \"Ankara\"\n}"
+          "raw": "{\"name\":\"Player User {{run_id}}\",\"email\":\"player+{{run_id}}@example.com\",\"password\":\"Password123\",\"password_confirmation\":\"Password123\",\"role\":\"player\",\"city\":\"Ankara\"}"
         },
         "url": "{{base_url}}/api/auth/register"
       }
     },
     {
       "name": "Auth - Login Team",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('login team status', function () { pm.response.to.have.status(200); });",
+              "const res = pm.response.json();",
+              "pm.environment.set('team_token', res.data.token);"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -42,13 +104,26 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"team@example.com\",\n  \"password\": \"Password123\"\n}"
+          "raw": "{\"email\":\"team+{{run_id}}@example.com\",\"password\":\"Password123\"}"
         },
         "url": "{{base_url}}/api/auth/login"
       }
     },
     {
       "name": "Opportunity - Create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('opportunity created', function () { pm.response.to.have.status(201); });",
+              "const res = pm.response.json();",
+              "pm.environment.set('opportunity_id', String(res.data.id));"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -57,13 +132,26 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"title\": \"Scout Needed\",\n  \"position\": \"FW\",\n  \"city\": \"Istanbul\",\n  \"status\": \"open\"\n}"
+          "raw": "{\"title\":\"Scout Needed {{run_id}}\",\"position\":\"FW\",\"city\":\"Istanbul\",\"status\":\"open\"}"
         },
         "url": "{{base_url}}/api/opportunities"
       }
     },
     {
       "name": "Auth - Login Player",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('login player status', function () { pm.response.to.have.status(200); });",
+              "const res = pm.response.json();",
+              "pm.environment.set('player_token', res.data.token);"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -71,13 +159,26 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"player@example.com\",\n  \"password\": \"Password123\"\n}"
+          "raw": "{\"email\":\"player+{{run_id}}@example.com\",\"password\":\"Password123\"}"
         },
         "url": "{{base_url}}/api/auth/login"
       }
     },
     {
       "name": "Application - Apply",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('application created', function () { pm.response.to.have.status(201); });",
+              "const res = pm.response.json();",
+              "pm.environment.set('application_id', String(res.data.id));"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -86,13 +187,26 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"message\": \"I am interested\"\n}"
+          "raw": "{\"message\":\"I am interested\"}"
         },
         "url": "{{base_url}}/api/opportunities/{{opportunity_id}}/apply"
       }
     },
     {
       "name": "Application - Incoming (Team)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('incoming status', function () { pm.response.to.have.status(200); });",
+              "const res = pm.response.json();",
+              "pm.test('incoming has data', function () { pm.expect(res.data.data.length).to.be.above(0); });"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [
@@ -103,6 +217,19 @@
     },
     {
       "name": "Application - Change Status",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('change status ok', function () { pm.response.to.have.status(200); });",
+              "const res = pm.response.json();",
+              "pm.test('application accepted', function () { pm.expect(res.data.status).to.eql('accepted'); });"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "PATCH",
         "header": [
@@ -111,13 +238,24 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"status\": \"accepted\"\n}"
+          "raw": "{\"status\":\"accepted\"}"
         },
         "url": "{{base_url}}/api/applications/{{application_id}}/status"
       }
     },
     {
       "name": "Contact - Send Message",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('contact sent', function () { pm.response.to.have.status(201); });"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -126,13 +264,26 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"to_user_id\": {{team_user_id}},\n  \"subject\": \"Hello\",\n  \"message\": \"Can we talk?\"\n}"
+          "raw": "{\"to_user_id\":{{team_user_id}},\"subject\":\"Hello\",\"message\":\"Can we talk?\"}"
         },
         "url": "{{base_url}}/api/contacts"
       }
     },
     {
       "name": "Contact - Inbox",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('inbox status', function () { pm.response.to.have.status(200); });",
+              "const res = pm.response.json();",
+              "pm.test('inbox has data', function () { pm.expect(res.data.data.length).to.be.above(0); });"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [
@@ -143,6 +294,17 @@
     },
     {
       "name": "Media - Upload",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('media uploaded', function () { pm.response.to.have.status(201); });"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -169,11 +331,13 @@
   ],
   "variable": [
     { "key": "base_url", "value": "http://127.0.0.1:8000" },
+    { "key": "run_id", "value": "" },
     { "key": "team_token", "value": "" },
     { "key": "player_token", "value": "" },
-    { "key": "team_user_id", "value": "1" },
-    { "key": "opportunity_id", "value": "1" },
-    { "key": "application_id", "value": "1" },
-    { "key": "media_file_path", "value": "C:/tmp/sample.jpg" }
+    { "key": "team_user_id", "value": "" },
+    { "key": "player_user_id", "value": "" },
+    { "key": "opportunity_id", "value": "" },
+    { "key": "application_id", "value": "" },
+    { "key": "media_file_path", "value": "C:/Users/Hp/PhpstormProjects/untitled/scout_api/postman/sample.png" }
   ]
 }

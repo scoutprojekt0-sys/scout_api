@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -25,16 +25,46 @@ jobs:
           extensions: dom, curl, libxml, mbstring, zip, pdo, sqlite, pdo_sqlite
           coverage: none
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
 
       - name: Prepare environment
         run: |
           cp .env.example .env
+          touch database/database.sqlite
           php artisan key:generate
+          php artisan migrate --force
 
       - name: API route smoke
         run: php artisan route:list --path=api
 
       - name: Test smoke
         run: php artisan test
+
+      - name: Start API server
+        run: |
+          php -S 127.0.0.1:8000 -t public public/index.php > /tmp/php-server.log 2>&1 &
+          for i in {1..20}; do
+            if curl -sSf http://127.0.0.1:8000/up > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server did not become ready in time"
+          cat /tmp/php-server.log
+          exit 1
+
+      - name: API E2E (Newman)
+        run: |
+          base64 -d > /tmp/sample.png <<'EOF'
+          iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+X2ioAAAAASUVORK5CYII=
+          EOF
+          npx --yes newman run postman/Scout_API_E2E.postman_collection.json \
+            --environment postman/Scout_API_E2E.postman_environment.json \
+            --env-var base_url=http://127.0.0.1:8000 \
+            --env-var media_file_path=/tmp/sample.png

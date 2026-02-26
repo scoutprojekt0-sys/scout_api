@@ -58,6 +58,12 @@ return [
             'ignore_exceptions' => false,
         ],
 
+        'ops' => [
+            'driver' => 'stack',
+            'channels' => explode(',', (string) env('LOG_OPS_STACK', 'daily,alerts')),
+            'ignore_exceptions' => false,
+        ],
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
@@ -79,6 +85,15 @@ return [
             'username' => env('LOG_SLACK_USERNAME', 'Laravel Log'),
             'emoji' => env('LOG_SLACK_EMOJI', ':boom:'),
             'level' => env('LOG_LEVEL', 'critical'),
+            'replace_placeholders' => true,
+        ],
+
+        'alerts' => [
+            'driver' => 'slack',
+            'url' => env('ALERT_SLACK_WEBHOOK_URL', env('LOG_SLACK_WEBHOOK_URL')),
+            'username' => env('ALERT_SLACK_USERNAME', 'NextScout Alerts'),
+            'emoji' => env('ALERT_SLACK_EMOJI', ':rotating_light:'),
+            'level' => env('ALERT_LOG_LEVEL', 'error'),
             'replace_placeholders' => true,
         ],
 

@@ -1,338 +1,242 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>ScoutZone Platform</title>
-        @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-            @vite(['resources/css/app.css', 'resources/js/app.js'])
-        @endif
-        <style>
-            :root {
-                --bg: #0a0a0c;
-                --bg-soft: #111115;
-                --panel: #17171c;
-                --line: #2a2a31;
-                --ink: #f5f5f7;
-                --muted: #acacb6;
-                --red: #e0203a;
-                --red-strong: #a80f24;
-                --white: #ffffff;
-            }
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NextScout | Homepage</title>
+  <style>
+    :root {
+      --bg: #2c2c2c;
+      --panel: #111111;
+      --line: #242424;
+      --text: #f5f5f5;
+      --muted: #a7a7a7;
+      --accent: #ffffff;
+    }
 
-            * { box-sizing: border-box; }
-            body {
-                margin: 0;
-                font-family: "Segoe UI", Tahoma, sans-serif;
-                color: var(--ink);
-                background:
-                    radial-gradient(circle at 8% 8%, rgba(224, 32, 58, 0.24), transparent 30%),
-                    radial-gradient(circle at 92% 88%, rgba(224, 32, 58, 0.15), transparent 28%),
-                    var(--bg);
-            }
+    * { box-sizing: border-box; }
 
-            .page {
-                max-width: 1180px;
-                margin: 0 auto;
-                padding: 22px;
-                display: grid;
-                gap: 16px;
-            }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 10% 10%, #2c2c2c 0%, transparent 34%), var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+    }
 
-            .topbar {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 12px;
-                padding: 12px 14px;
-                border: 1px solid var(--line);
-                border-radius: 14px;
-                background: rgba(23, 23, 28, 0.86);
-                backdrop-filter: blur(5px);
-            }
+    .page {
+      width: min(1100px, 92%);
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
 
-            .brand {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                font-weight: 800;
-                letter-spacing: 0.2px;
-            }
+    .topbar {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      border: 1px solid #d6d6d6;
+      border-radius: 14px;
+      background: rgba(44, 44, 44, 0.95);
+      padding: 12px 14px;
+      gap: 14px;
+    }
 
-            .logo {
-                width: 34px;
-                height: 34px;
-                border-radius: 10px;
-                display: grid;
-                place-items: center;
-                background: linear-gradient(130deg, var(--red), var(--red-strong));
-                color: var(--white);
-            }
+    .top-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
 
-            .top-links {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                flex-wrap: wrap;
-            }
+    .top-center {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-left: 18px;
+    }
 
-            .btn {
-                border: 1px solid var(--line);
-                border-radius: 10px;
-                padding: 10px 12px;
-                font-weight: 700;
-                text-decoration: none;
-                color: var(--ink);
-                background: #18181f;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 40px;
-            }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: "Arial Black", "Segoe UI", sans-serif;
+      font-weight: 900;
+      font-size: clamp(1.55rem, 2.2vw, 2.05rem);
+      line-height: 1;
+      letter-spacing: 0.02em;
+      user-select: none;
+    }
+    .brand-next { color: #ffffff; }
+    .brand-scout { color: #df1f36; }
+    .brand-slash {
+      color: #df1f36;
+      font-weight: 900;
+      display: inline-block;
+      width: 24px;
+      text-align: center;
+    }
 
-            .btn-primary {
-                border-color: transparent;
-                background: linear-gradient(130deg, var(--red), var(--red-strong));
-                color: var(--white);
-            }
+    .btn {
+      border: 1px solid #3a3a3a;
+      background: #111111;
+      color: #f5f5f5;
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-family: "Arial Black", "Segoe UI", sans-serif;
+      letter-spacing: 0.02em;
+    }
 
-            .hero {
-                border: 1px solid var(--line);
-                border-radius: 18px;
-                background:
-                    linear-gradient(155deg, rgba(224, 32, 58, 0.15), transparent 36%),
-                    var(--panel);
-                padding: 28px;
-                display: grid;
-                grid-template-columns: 1.2fr 1fr;
-                gap: 20px;
-                align-items: center;
-            }
+    .btn-primary {
+      background: #f5f5f5;
+      color: #0a0a0a;
+      border-color: #f5f5f5;
+    }
 
-            .eyebrow {
-                color: #ffc6ce;
-                font-size: 12px;
-                font-weight: 700;
-                letter-spacing: 0.8px;
-                text-transform: uppercase;
-            }
+    .live-btn {
+      margin-left: 2px;
+      padding: 4px 8px;
+      font-size: 0.7rem;
+      border-radius: 5px;
+      background: #df1f36;
+      color: #ffffff;
+      border-color: #df1f36;
+      flex: 0 0 auto;
+      font-weight: 800;
+    }
 
-            .hero h1 {
-                margin: 6px 0 10px;
-                font-size: 38px;
-                line-height: 1.05;
-            }
+    .search-box {
+      margin-left: 0;
+      width: 320px;
+      height: 30px;
+      border-radius: 6px;
+      border: 1px solid #d9d9d9;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px 0 10px;
+    }
 
-            .hero p {
-                margin: 0;
-                color: var(--muted);
-                line-height: 1.5;
-                max-width: 580px;
-            }
+    .search-box input {
+      border: 0;
+      outline: 0;
+      width: 100%;
+      font-size: 0.82rem;
+      color: #303030;
+      background: transparent;
+      font-family: "Arial Black", "Segoe UI", sans-serif;
+      letter-spacing: 0.01em;
+    }
 
-            .hero-actions {
-                display: flex;
-                gap: 8px;
-                margin-top: 16px;
-                flex-wrap: wrap;
-            }
+    .search-box input::placeholder {
+      color: #8a8a8a;
+    }
 
-            .metrics {
-                display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 10px;
-            }
+    .search-icon {
+      color: #505050;
+      font-size: 0.95rem;
+      line-height: 1;
+      margin-left: 6px;
+    }
 
-            .metric {
-                border: 1px solid var(--line);
-                border-radius: 12px;
-                padding: 12px;
-                background: #141419;
-                display: grid;
-                gap: 6px;
-            }
+    .member-btn {
+      margin-left: 0;
+      padding: 4px 9px;
+      font-size: 0.7rem;
+      border-radius: 5px;
+      background: #df1f36;
+      color: #ffffff;
+      border-color: #df1f36;
+      flex: 0 0 auto;
+      font-weight: 800;
+    }
 
-            .metric strong {
-                font-size: 24px;
-            }
+    .hero {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(165deg, #111111, #0a0a0a);
+      padding: 28px;
+    }
 
-            .metric span {
-                color: var(--muted);
-                font-size: 12px;
-            }
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 4.8vw, 3rem);
+      line-height: 1.05;
+      max-width: 14ch;
+    }
 
-            .stack {
-                display: grid;
-                gap: 12px;
-            }
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 58ch;
+      line-height: 1.5;
+    }
 
-            .roadmap {
-                border: 1px solid var(--line);
-                border-radius: 14px;
-                padding: 14px;
-                background: #141419;
-            }
+    .hero-actions {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
-            .roadmap h3 {
-                margin: 0 0 8px;
-                font-size: 16px;
-            }
+    .note {
+      margin-top: 10px;
+      font-size: 0.82rem;
+      color: #8f8f8f;
+    }
 
-            .timeline {
-                display: grid;
-                gap: 8px;
-            }
-
-            .timeline-item {
-                border: 1px solid var(--line);
-                border-radius: 10px;
-                padding: 9px 10px;
-                display: grid;
-                grid-template-columns: auto 1fr;
-                gap: 8px;
-                align-items: center;
-                background: #111116;
-            }
-
-            .dot {
-                width: 9px;
-                height: 9px;
-                border-radius: 50%;
-                background: var(--red);
-            }
-
-            .sections {
-                display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 12px;
-            }
-
-            .card {
-                border: 1px solid var(--line);
-                border-radius: 14px;
-                padding: 14px;
-                background: #131318;
-                display: grid;
-                gap: 8px;
-            }
-
-            .card h4 {
-                margin: 0;
-                font-size: 16px;
-            }
-
-            .card p {
-                margin: 0;
-                color: var(--muted);
-                font-size: 13px;
-                line-height: 1.45;
-            }
-
-            .footer-cta {
-                border: 1px solid var(--line);
-                border-radius: 14px;
-                padding: 14px;
-                background: #15151c;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                gap: 10px;
-                flex-wrap: wrap;
-            }
-
-            .footer-cta span {
-                color: var(--muted);
-                font-size: 13px;
-            }
-
-            @media (max-width: 980px) {
-                .hero { grid-template-columns: 1fr; }
-                .sections { grid-template-columns: 1fr; }
-            }
-
-            @media (max-width: 760px) {
-                .page { padding: 14px; }
-                .hero { padding: 18px; }
-                .hero h1 { font-size: 31px; }
-                .metrics { grid-template-columns: 1fr; }
-                .topbar { align-items: flex-start; flex-direction: column; }
-                .top-links { width: 100%; }
-                .btn { width: 100%; }
-            }
-        </style>
-    </head>
-    <body>
-        <div class="page">
-            <header class="topbar">
-                <div class="brand">
-                    <div class="logo">SZ</div>
-                    <span>ScoutZone Platform</span>
-                </div>
-                <nav class="top-links">
-                    <a class="btn" href="/admin">Admin Console</a>
-                    <a class="btn" href="/api/news/live">Live News API</a>
-                    <a class="btn btn-primary" href="/admin">Open Dashboard</a>
-                </nav>
-            </header>
-
-            <section class="hero">
-                <div>
-                    <span class="eyebrow">Scouting Operations Backbone</span>
-                    <h1>Secure talent workflow for clubs, scouts, and players.</h1>
-                    <p>
-                        ScoutZone centralizes opportunity management, applications, messaging, and media proof
-                        into one auditable and launch-ready operation layer.
-                    </p>
-                    <div class="hero-actions">
-                        <a class="btn btn-primary" href="/admin">Go to Admin</a>
-                        <a class="btn" href="/api/news/live">Check Public API</a>
-                    </div>
-                </div>
-                <div class="stack">
-                    <div class="metrics">
-                        <article class="metric">
-                            <strong>8</strong>
-                            <span>Week delivery cycle completed</span>
-                        </article>
-                        <article class="metric">
-                            <strong>4</strong>
-                            <span>CI gate families active</span>
-                        </article>
-                        <article class="metric">
-                            <strong>24/7</strong>
-                            <span>Operational readiness model</span>
-                        </article>
-                    </div>
-                    <article class="roadmap">
-                        <h3>Launch Cadence</h3>
-                        <div class="timeline">
-                            <div class="timeline-item"><span class="dot"></span><span>Pre-prod dry run and RC gate</span></div>
-                            <div class="timeline-item"><span class="dot"></span><span>Final UAT + accessibility closure</span></div>
-                            <div class="timeline-item"><span class="dot"></span><span>Go-live and week-1 monitoring</span></div>
-                        </div>
-                    </article>
-                </div>
-            </section>
-
-            <section class="sections">
-                <article class="card">
-                    <h4>Core Product Flow</h4>
-                    <p>Role-based opportunities, applications, and profile operations with sorting, filtering, and pagination.</p>
-                </article>
-                <article class="card">
-                    <h4>Communication + Media</h4>
-                    <p>Inbox/sent workflow and media lifecycle management in a single consistent backend contract.</p>
-                </article>
-                <article class="card">
-                    <h4>Security + Reliability</h4>
-                    <p>Pentest-style tests, backup/rollback runbooks, monitoring alerts, and release gate governance.</p>
-                </article>
-            </section>
-
-            <section class="footer-cta">
-                <span>Ready for customer-facing demos and controlled production rollout.</span>
-                <a class="btn btn-primary" href="/admin">Enter Admin Console</a>
-            </section>
+    @media (max-width: 720px) {
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+      .top-center {
+        order: 2;
+        justify-content: flex-start;
+      }
+      .member-btn { order: 3; }
+      .btn { flex: 1; text-align: center; }
+      .search-box { width: 100%; }
+      .hero { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="top-left">
+        <div class="brand">
+          <span class="brand-slash">//</span>
+          <span class="brand-next">NEXT</span><span class="brand-scout">SCOUT</span>
+          <span class="brand-slash">//</span>
         </div>
-    </body>
+        <a class="btn live-btn" href="/live-scores">Canli</a>
+      </div>
+      <div class="top-center">
+        <label class="search-box" aria-label="Arama">
+          <input type="search" placeholder="Arama" />
+          <span class="search-icon">⌕</span>
+        </label>
+      </div>
+      <a class="btn member-btn" href="/login">Uye Girisi</a>
+    </header>
+
+    <section class="hero">
+      <h1>Oyuncular icin resmi ana sayfa</h1>
+      <p>
+        Burasi admin paneli degil. Oyuncu kayit ve giris akisi bu sayfadan ilerleyecek.
+        Bir sonraki adimda butonlari senin istedigin gercek sayfalara baglayacagiz.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#">Hemen Kaydol</a>
+        <a class="btn" href="/login">Zaten Uyeliyim</a>
+      </div>
+      <div class="note">Admin paneli ayridir ve bu sayfadan acilmaz.</div>
+    </section>
+  </div>
+</body>
 </html>

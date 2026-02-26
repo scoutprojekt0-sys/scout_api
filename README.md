@@ -113,7 +113,6 @@ Kaynak ulasilamazsa endpoint otomatik olarak:
 ## Operations
 
 - `docs/runbooks/CI_RULESET_ALIGNMENT.md`: required check names, ruleset alignment, and PR merge-block recovery steps.
- docs/ci-ruleset-alignment
 
 ## Sales
 
@@ -121,5 +120,3 @@ Kaynak ulasilamazsa endpoint otomatik olarak:
 - `docs/sales/DEMO_SCRIPT_10_MIN.md`
 - `docs/sales/PACKAGES_AND_PRICING_DRAFT.md`
 - `docs/sales/SECURITY_AND_LAUNCH_APPENDIX.md`
-=======
- feat/scout-api-hardening

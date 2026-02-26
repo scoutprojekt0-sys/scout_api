@@ -19,6 +19,7 @@ class AdminDashboardPageTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Scout Admin Dashboard');
+        $response->assertSee('Players');
         $response->assertSee('Scouting plan');
         $response->assertSee('Report statistics');
     }

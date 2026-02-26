@@ -298,6 +298,78 @@
                 gap: 10px;
             }
 
+            .player-tools {
+                display: grid;
+                grid-template-columns: repeat(6, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .player-tools input,
+            .player-tools select {
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                padding: 9px 10px;
+                background: #101015;
+                color: var(--white);
+                width: 100%;
+            }
+
+            .player-table-wrap {
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                overflow: auto;
+                background: #17171d;
+            }
+
+            .player-table {
+                width: 100%;
+                border-collapse: collapse;
+                min-width: 820px;
+            }
+
+            .player-table th,
+            .player-table td {
+                text-align: left;
+                padding: 10px;
+                border-bottom: 1px solid #24242c;
+                font-size: 13px;
+            }
+
+            .player-table th {
+                color: #bdbdc8;
+                font-weight: 700;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.03em;
+                background: #1b1b23;
+            }
+
+            .player-row-btn {
+                border: 1px solid #383845;
+                border-radius: 8px;
+                background: #1d1d25;
+                color: #f2f2f4;
+                padding: 6px 9px;
+                font-weight: 700;
+                cursor: pointer;
+            }
+
+            .player-pager {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .player-detail {
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                padding: 12px;
+                background: #17171d;
+                display: grid;
+                gap: 8px;
+            }
+
             .report-card {
                 border: 1px solid var(--line);
                 border-radius: 12px;
@@ -403,6 +475,7 @@
                 .sidebar, .rightbar, .main { grid-column: auto; }
                 .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
                 .report-grid { grid-template-columns: 1fr; }
+                .player-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             }
         </style>
     </head>
@@ -440,18 +513,46 @@
                 <div class="status" id="statusBox" role="status" aria-live="polite">Command center is waiting for a token.</div>
 
                 <section class="kpi-grid" id="kpiGrid">
+                    <article class="kpi"><span class="kpi-label">Total Players</span><span class="kpi-value" id="kpiPlayers">-</span></article>
+                    <article class="kpi"><span class="kpi-label">Filtered Players</span><span class="kpi-value" id="kpiFilteredPlayers">-</span></article>
                     <article class="kpi"><span class="kpi-label">Open Opportunities</span><span class="kpi-value" id="kpiOpen">-</span></article>
                     <article class="kpi"><span class="kpi-label">Pending Applications</span><span class="kpi-value" id="kpiPending">-</span></article>
-                    <article class="kpi"><span class="kpi-label">Inbox Messages</span><span class="kpi-value" id="kpiInbox">-</span></article>
-                    <article class="kpi"><span class="kpi-label">Media Assets</span><span class="kpi-value" id="kpiMedia">-</span></article>
                 </section>
 
                 <div class="tiny">Live board for planning, assignment, and reporting across opportunities.</div>
 
                 <div class="tab-row">
+                    <button class="tab-btn" id="tabPlayersBtn" type="button">Players</button>
                     <button class="tab-btn active" id="tabPlanBtn" type="button">Scouting plan</button>
                     <button class="tab-btn" id="tabReportBtn" type="button">Report statistics</button>
                 </div>
+
+                <section id="tabPlayers" class="board-wrap hidden" aria-live="polite">
+                    <div class="player-tools">
+                        <input id="playerPositionFilter" type="text" placeholder="Position (e.g. ST)">
+                        <input id="playerCityFilter" type="text" placeholder="City">
+                        <input id="playerAgeMinFilter" type="number" min="10" max="60" placeholder="Min age">
+                        <input id="playerAgeMaxFilter" type="number" min="10" max="60" placeholder="Max age">
+                        <select id="playerPerPageFilter">
+                            <option value="10">10 / page</option>
+                            <option value="20" selected>20 / page</option>
+                            <option value="50">50 / page</option>
+                        </select>
+                        <button id="playerFilterBtn" class="btn btn-secondary" type="button">Apply Filters</button>
+                    </div>
+                    <div class="player-table-wrap" id="playersTableWrap"></div>
+                    <div class="player-pager">
+                        <div class="tiny" id="playersPaginationInfo">Page -</div>
+                        <div>
+                            <button id="playersPrevBtn" class="btn btn-secondary" type="button">Prev</button>
+                            <button id="playersNextBtn" class="btn btn-secondary" type="button">Next</button>
+                        </div>
+                    </div>
+                    <article class="player-detail" id="playerDetailBox">
+                        <strong>Player Detail</strong>
+                        <span class="tiny">Select a player row to inspect profile details.</span>
+                    </article>
+                </section>
 
                 <section id="tabPlan" class="board-wrap" aria-live="polite"></section>
 
@@ -485,16 +586,19 @@
                 </div>
 
                 <section class="task-box">
-                    <strong>Assign Task</strong>
+                    <strong>Assign Player Review</strong>
                     <select id="taskOpportunity">
                         <option value="">Select opportunity</option>
                     </select>
                     <select id="taskScout">
                         <option value="">Select scout</option>
                     </select>
+                    <select id="taskPlayer">
+                        <option value="">Select player</option>
+                    </select>
                     <input id="taskNote" type="text" maxlength="180" placeholder="Task note">
                     <button id="taskSaveBtn" class="btn btn-primary" type="button">Create Task</button>
-                    <span class="tiny" id="taskStatus">Tasks are local demo notes for now.</span>
+                    <span class="tiny" id="taskStatus">Assignments are local demo notes for now.</span>
                 </section>
 
                 <section class="scout-box">
@@ -508,6 +612,20 @@
             const state = {
                 me: null,
                 opportunities: [],
+                players: [],
+                playersMeta: {
+                    current_page: 1,
+                    last_page: 1,
+                    total: 0,
+                    per_page: 20,
+                },
+                playersFilters: {
+                    position: '',
+                    city: '',
+                    ageMin: '',
+                    ageMax: '',
+                    perPage: 20,
+                },
                 applications: [],
                 inbox: [],
                 media: [],
@@ -515,8 +633,10 @@
             };
 
             const statusBox = document.getElementById('statusBox');
+            const tabPlayersBtn = document.getElementById('tabPlayersBtn');
             const tabPlanBtn = document.getElementById('tabPlanBtn');
             const tabReportBtn = document.getElementById('tabReportBtn');
+            const tabPlayers = document.getElementById('tabPlayers');
             const tabPlan = document.getElementById('tabPlan');
             const tabReport = document.getElementById('tabReport');
             const tokenInput = document.getElementById('tokenInput');
@@ -541,6 +661,103 @@
                     throw new Error(data.message || `Request failed (${response.status})`);
                 }
                 return data;
+            }
+
+            function playerAgeFromBirthYear(birthYear) {
+                if (!birthYear) return '-';
+                const year = Number(birthYear);
+                if (!Number.isFinite(year)) return '-';
+                return new Date().getFullYear() - year;
+            }
+
+            async function loadPlayers(page = 1) {
+                const params = new URLSearchParams();
+                params.set('page', String(page));
+                params.set('per_page', String(state.playersFilters.perPage || 20));
+                if (state.playersFilters.position) params.set('position', state.playersFilters.position);
+                if (state.playersFilters.city) params.set('city', state.playersFilters.city);
+                if (state.playersFilters.ageMin) params.set('age_min', state.playersFilters.ageMin);
+                if (state.playersFilters.ageMax) params.set('age_max', state.playersFilters.ageMax);
+
+                const playersRes = await api(`/api/players?${params.toString()}`);
+                const payload = playersRes?.data || {};
+                state.players = payload.data || [];
+                state.playersMeta = {
+                    current_page: Number(payload.current_page || 1),
+                    last_page: Number(payload.last_page || 1),
+                    total: Number(payload.total || 0),
+                    per_page: Number(payload.per_page || state.playersFilters.perPage || 20),
+                };
+                renderPlayers();
+            }
+
+            function renderPlayers() {
+                const wrap = document.getElementById('playersTableWrap');
+                const rows = state.players || [];
+
+                if (!rows.length) {
+                    wrap.innerHTML = '<div class="tiny" style="padding:12px;">No players found with current filters.</div>';
+                } else {
+                    wrap.innerHTML = `
+                        <table class="player-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Position</th>
+                                    <th>Age</th>
+                                    <th>City</th>
+                                    <th>Team</th>
+                                    <th>Foot</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows.map((player) => `
+                                    <tr>
+                                        <td>#${player.id}</td>
+                                        <td>${player.name || '-'}</td>
+                                        <td>${player.position || '-'}</td>
+                                        <td>${playerAgeFromBirthYear(player.birth_year)}</td>
+                                        <td>${player.city || '-'}</td>
+                                        <td>${player.current_team || '-'}</td>
+                                        <td>${player.dominant_foot || '-'}</td>
+                                        <td><button class="player-row-btn" type="button" data-player-id="${player.id}">Inspect</button></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                }
+
+                const meta = state.playersMeta;
+                document.getElementById('playersPaginationInfo').textContent =
+                    `Page ${meta.current_page} / ${meta.last_page}  Total: ${meta.total}`;
+                document.getElementById('kpiPlayers').textContent = meta.total;
+                document.getElementById('kpiFilteredPlayers').textContent = rows.length;
+
+                const taskPlayer = document.getElementById('taskPlayer');
+                taskPlayer.innerHTML = '<option value="">Select player</option>' + rows.map((player) => `<option value="${player.id}">${player.name || 'Player'} (#${player.id})</option>`).join('');
+            }
+
+            async function inspectPlayer(playerId) {
+                try {
+                    const playerRes = await api(`/api/players/${playerId}`);
+                    const player = playerRes?.data || {};
+                    document.getElementById('playerDetailBox').innerHTML = `
+                        <strong>Player Detail #${player.id || '-'}</strong>
+                        <span class="tiny"><b>Name:</b> ${player.name || '-'}</span>
+                        <span class="tiny"><b>Email:</b> ${player.email || '-'}</span>
+                        <span class="tiny"><b>Position:</b> ${player.position || '-'}</span>
+                        <span class="tiny"><b>Age:</b> ${playerAgeFromBirthYear(player.birth_year)}</span>
+                        <span class="tiny"><b>City:</b> ${player.city || '-'}</span>
+                        <span class="tiny"><b>Current Team:</b> ${player.current_team || '-'}</span>
+                        <span class="tiny"><b>Height/Weight:</b> ${player.height_cm || '-'} cm / ${player.weight_kg || '-'} kg</span>
+                        <span class="tiny"><b>Bio:</b> ${player.bio || '-'}</span>
+                    `;
+                } catch (error) {
+                    document.getElementById('playerDetailBox').innerHTML = `<strong>Player Detail</strong><span class="tiny">${error.message || 'Unable to load player detail.'}</span>`;
+                }
             }
 
             function byKeyCount(rows, key) {
@@ -642,8 +859,6 @@
 
                 document.getElementById('kpiOpen').textContent = oppByStatus.open || 0;
                 document.getElementById('kpiPending').textContent = appByStatus.pending || 0;
-                document.getElementById('kpiInbox').textContent = state.inbox.length;
-                document.getElementById('kpiMedia').textContent = state.media.length;
 
                 renderBars('applicationBars', appByStatus);
                 renderBars('opportunityBars', oppByStatus);
@@ -680,6 +895,7 @@
                     state.inbox = inboxRes?.data?.data || [];
                     state.media = mediaRes?.data?.data || [];
                     state.scouts = scoutsRes?.data?.data || [];
+                    await loadPlayers(1);
 
                     renderPlan();
                     renderKpiAndReports();
@@ -690,40 +906,111 @@
                 }
             }
 
+            function collectPlayerFilters() {
+                state.playersFilters.position = String(document.getElementById('playerPositionFilter').value || '').trim();
+                state.playersFilters.city = String(document.getElementById('playerCityFilter').value || '').trim();
+                state.playersFilters.ageMin = String(document.getElementById('playerAgeMinFilter').value || '').trim();
+                state.playersFilters.ageMax = String(document.getElementById('playerAgeMaxFilter').value || '').trim();
+                state.playersFilters.perPage = Number(document.getElementById('playerPerPageFilter').value || 20);
+            }
+
+            function activatePlayersTab() {
+                tabPlayersBtn.classList.add('active');
+                tabPlanBtn.classList.remove('active');
+                tabReportBtn.classList.remove('active');
+                tabPlayers.classList.remove('hidden');
+                tabPlan.classList.add('hidden');
+                tabReport.classList.add('hidden');
+            }
+
             function activatePlanTab() {
+                tabPlayersBtn.classList.remove('active');
                 tabPlanBtn.classList.add('active');
                 tabReportBtn.classList.remove('active');
+                tabPlayers.classList.add('hidden');
                 tabPlan.classList.remove('hidden');
                 tabReport.classList.add('hidden');
             }
 
             function activateReportTab() {
+                tabPlayersBtn.classList.remove('active');
                 tabReportBtn.classList.add('active');
                 tabPlanBtn.classList.remove('active');
+                tabPlayers.classList.add('hidden');
                 tabReport.classList.remove('hidden');
                 tabPlan.classList.add('hidden');
             }
 
             document.getElementById('loadBtn').addEventListener('click', loadDashboard);
+            tabPlayersBtn.addEventListener('click', activatePlayersTab);
             tabPlanBtn.addEventListener('click', activatePlanTab);
             tabReportBtn.addEventListener('click', activateReportTab);
+            document.getElementById('playerFilterBtn').addEventListener('click', async () => {
+                try {
+                    collectPlayerFilters();
+                    await loadPlayers(1);
+                    setStatus('Player list refreshed.');
+                } catch (error) {
+                    setStatus(error.message || 'Player list refresh failed.', true);
+                }
+            });
+            document.getElementById('playersPrevBtn').addEventListener('click', async () => {
+                const page = state.playersMeta.current_page - 1;
+                if (page < 1) return;
+                await loadPlayers(page);
+            });
+            document.getElementById('playersNextBtn').addEventListener('click', async () => {
+                const page = state.playersMeta.current_page + 1;
+                if (page > state.playersMeta.last_page) return;
+                await loadPlayers(page);
+            });
+            document.getElementById('playersTableWrap').addEventListener('click', async (event) => {
+                const button = event.target.closest('[data-player-id]');
+                if (!button) return;
+                const playerId = Number(button.getAttribute('data-player-id'));
+                if (!playerId) return;
+                await inspectPlayer(playerId);
+            });
 
             document.getElementById('taskSaveBtn').addEventListener('click', () => {
                 const opp = document.getElementById('taskOpportunity').value;
                 const scout = document.getElementById('taskScout').value;
+                const player = document.getElementById('taskPlayer').value;
                 const note = document.getElementById('taskNote').value.trim();
-                if (!opp || !scout) {
-                    document.getElementById('taskStatus').textContent = 'Select opportunity and scout first.';
+                if (!opp || !scout || !player) {
+                    document.getElementById('taskStatus').textContent = 'Select opportunity, scout and player first.';
                     return;
                 }
-                document.getElementById('taskStatus').textContent = `Task recorded for scout #${scout} on opportunity #${opp}${note ? `: ${note}` : ''}`;
+                document.getElementById('taskStatus').textContent = `Assignment saved: player #${player} -> scout #${scout} on opportunity #${opp}${note ? `: ${note}` : ''}`;
                 document.getElementById('taskNote').value = '';
             });
 
             document.getElementById('globalSearch').addEventListener('input', (event) => {
                 const query = String(event.target.value || '').trim().toLowerCase();
                 if (!query) {
+                    if (tabPlayersBtn.classList.contains('active')) {
+                        renderPlayers();
+                        return;
+                    }
                     renderPlan();
+                    return;
+                }
+
+                if (tabPlayersBtn.classList.contains('active')) {
+                    const filtered = state.players.filter((player) => {
+                        const hay = [
+                            player.name,
+                            player.city,
+                            player.position,
+                            player.current_team,
+                            player.dominant_foot,
+                        ].map((v) => String(v || '').toLowerCase()).join(' ');
+                        return hay.includes(query);
+                    });
+                    const backup = state.players;
+                    state.players = filtered;
+                    renderPlayers();
+                    state.players = backup;
                     return;
                 }
 
