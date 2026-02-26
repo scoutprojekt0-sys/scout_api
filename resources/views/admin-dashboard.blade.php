@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Scout Admin Dashboard</title>
+        <title>{{ __('ui.admin.title') }}</title>
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @endif
@@ -411,15 +411,15 @@
             <aside class="panel sidebar">
                 <div class="brand">
                     <div class="brand-badge">SZ</div>
-                    <div>ScoutZone Command</div>
+                    <div>{{ __('ui.app_name') }} Command</div>
                 </div>
                 <div class="nav-list">
-                    <button class="nav-item active" type="button">Dashboard</button>
-                    <button class="nav-item" type="button">Reports</button>
-                    <button class="nav-item" type="button">All Players</button>
-                    <button class="nav-item" type="button">Settings</button>
-                    <button class="nav-item" type="button">Notifications</button>
-                    <button class="nav-item" type="button">Support</button>
+                    <button class="nav-item active" type="button">{{ __('ui.admin.dashboard') }}</button>
+                    <button class="nav-item" type="button">{{ __('ui.admin.reports') }}</button>
+                    <button class="nav-item" type="button">{{ __('ui.admin.all_players') }}</button>
+                    <button class="nav-item" type="button">{{ __('ui.admin.settings') }}</button>
+                    <button class="nav-item" type="button">{{ __('ui.admin.notifications') }}</button>
+                    <button class="nav-item" type="button">{{ __('ui.admin.support') }}</button>
                 </div>
                 <div class="support-box">
                     <strong>Support 24/7</strong>
@@ -430,10 +430,15 @@
 
             <main class="panel main">
                 <div class="top-row">
-                    <input id="globalSearch" class="search" type="search" placeholder="Search team, player, city...">
+                    <input id="globalSearch" class="search" type="search" placeholder="{{ __('ui.admin.search_placeholder') }}">
                     <div class="token-row">
-                        <input id="tokenInput" type="text" placeholder="Bearer token (required)">
-                        <button id="loadBtn" class="btn btn-primary" type="button">Load Dashboard</button>
+                        <input id="tokenInput" type="text" placeholder="{{ __('ui.admin.token_placeholder') }}">
+                        <button id="loadBtn" class="btn btn-primary" type="button">{{ __('ui.admin.load_dashboard') }}</button>
+                        <select onchange="window.location='/lang/'+this.value" style="border:1px solid #2d2d35;background:#101015;color:#f2f2f4;border-radius:8px;padding:10px;">
+                            @foreach (config('app.supported_locales', ['tr', 'en', 'de', 'es']) as $locale)
+                                <option value="{{ $locale }}" @selected(app()->getLocale() === $locale)>{{ __('ui.languages.'.$locale) }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 

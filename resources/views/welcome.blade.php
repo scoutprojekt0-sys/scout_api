@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>ScoutZone Platform</title>
+        <title>{{ __('ui.app_name') }}</title>
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @endif
@@ -266,26 +266,33 @@
             <header class="topbar">
                 <div class="brand">
                     <div class="logo">SZ</div>
-                    <span>ScoutZone Platform</span>
+                    <span>{{ __('ui.app_name') }}</span>
                 </div>
                 <nav class="top-links">
-                    <a class="btn" href="/admin">Admin Console</a>
-                    <a class="btn" href="/api/news/live">Live News API</a>
-                    <a class="btn btn-primary" href="/admin">Open Dashboard</a>
+                    <a class="btn" href="/admin">{{ __('ui.welcome.admin_console') }}</a>
+                    <a class="btn" href="/api/news/live">{{ __('ui.welcome.live_news_api') }}</a>
+                    <a class="btn btn-primary" href="/admin">{{ __('ui.welcome.open_dashboard') }}</a>
+                    <form method="get" action="/lang/{{ app()->getLocale() }}" style="display:inline-flex;gap:6px;align-items:center;">
+                        <label for="lang" style="font-size:12px;color:#aaaab4;">{{ __('ui.language') }}</label>
+                        <select id="lang" name="lang" onchange="window.location='/lang/'+this.value" style="border:1px solid #2a2a31;background:#18181f;color:#f5f5f7;border-radius:8px;padding:8px;">
+                            @foreach (config('app.supported_locales', ['tr', 'en', 'de', 'es']) as $locale)
+                                <option value="{{ $locale }}" @selected(app()->getLocale() === $locale)>{{ __('ui.languages.'.$locale) }}</option>
+                            @endforeach
+                        </select>
+                    </form>
                 </nav>
             </header>
 
             <section class="hero">
                 <div>
                     <span class="eyebrow">Scouting Operations Backbone</span>
-                    <h1>Secure talent workflow for clubs, scouts, and players.</h1>
+                    <h1>{{ __('ui.welcome.title') }}</h1>
                     <p>
-                        ScoutZone centralizes opportunity management, applications, messaging, and media proof
-                        into one auditable and launch-ready operation layer.
+                        {{ __('ui.welcome.subtitle') }}
                     </p>
                     <div class="hero-actions">
-                        <a class="btn btn-primary" href="/admin">Go to Admin</a>
-                        <a class="btn" href="/api/news/live">Check Public API</a>
+                        <a class="btn btn-primary" href="/admin">{{ __('ui.welcome.go_to_admin') }}</a>
+                        <a class="btn" href="/api/news/live">{{ __('ui.welcome.check_public_api') }}</a>
                     </div>
                 </div>
                 <div class="stack">
