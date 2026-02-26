@@ -52,3 +52,4 @@ https://<backend-domain>/api
 ## 6) Backup / Restore / DR
 
 - `docs/runbooks/BACKUP_RESTORE_DR.md`
+- `docs/runbooks/PROD_GO_LIVE_CHECKLIST.md`

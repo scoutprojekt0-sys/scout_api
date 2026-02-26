@@ -1,0 +1,37 @@
+name: Coverage
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP with Xdebug
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
+          coverage: xdebug
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+        env:
+          APP_ENV: local
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+
+      - name: Run tests with coverage
+        run: |
+          php -d xdebug.mode=coverage vendor/bin/phpunit --coverage-clover=coverage.xml
+
+      - name: Enforce minimum line coverage (60%)
+        run: |
+          php -r "$xml=simplexml_load_file('coverage.xml'); if(!$xml){fwrite(STDERR,'coverage.xml not found'.PHP_EOL); exit(1);} $lineRate=(float)$xml['line-rate']; $pct=$lineRate*100; echo 'Line coverage: '.number_format($pct,2).'%'.PHP_EOL; if($pct<60){fwrite(STDERR,'Coverage threshold failed (<60%)'.PHP_EOL); exit(1);} "
