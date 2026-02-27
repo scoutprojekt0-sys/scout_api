@@ -24,9 +24,6 @@ export RAILWAY_API_TOKEN="${RAILWAY_TOKEN}"
 echo "Installing Railway CLI..."
 npm install --global @railway/cli
 
-echo "Validating Railway authentication..."
-railway whoami
-
 echo "Linking Railway project/environment/service..."
 railway link \
   --project "${RAILWAY_PROJECT_ID}" \
