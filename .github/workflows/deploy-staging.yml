@@ -68,6 +68,21 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Validate deploy secrets (safe)
+        run: |
+          token_trimmed="$(echo "${RAILWAY_TOKEN}" | tr -d '\r\n[:space:]')"
+          echo "RAILWAY_TOKEN length: ${#token_trimmed}"
+          [[ -n "${RAILWAY_PROJECT_ID}" ]] || (echo "RAILWAY_PROJECT_ID empty" && exit 1)
+          [[ -n "${RAILWAY_ENVIRONMENT_ID}" ]] || (echo "RAILWAY_ENVIRONMENT_ID empty" && exit 1)
+          [[ -n "${RAILWAY_SERVICE_ID}" ]] || (echo "RAILWAY_SERVICE_ID empty" && exit 1)
+          [[ -n "${STAGING_HEALTHCHECK_URL}" ]] || (echo "STAGING_HEALTHCHECK_URL empty" && exit 1)
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
+          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
+          STAGING_HEALTHCHECK_URL: ${{ secrets.STAGING_HEALTHCHECK_URL }}
+
       - name: Run staging deploy script
         run: |
           chmod +x scripts/railway_deploy_staging.sh
