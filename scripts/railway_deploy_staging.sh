@@ -16,8 +16,16 @@ for var_name in "${required_vars[@]}"; do
   fi
 done
 
+# Normalize token copied from UI and support both CLI env names.
+RAILWAY_TOKEN="$(echo "${RAILWAY_TOKEN}" | tr -d '\r\n[:space:]')"
+export RAILWAY_TOKEN
+export RAILWAY_API_TOKEN="${RAILWAY_TOKEN}"
+
 echo "Installing Railway CLI..."
 npm install --global @railway/cli
+
+echo "Validating Railway authentication..."
+railway whoami
 
 echo "Linking Railway project/environment/service..."
 railway link \
