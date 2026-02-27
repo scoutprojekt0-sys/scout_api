@@ -13,7 +13,7 @@ class HealthController extends Controller
         return response()->json([
             'ok' => true,
             'status' => 'live',
-            'timestamp' => now()->toISOString(),
+            'timestamp' => now()->toIso8601String(),
         ]);
     }
 
@@ -28,7 +28,7 @@ class HealthController extends Controller
                 'checks' => [
                     'database' => false,
                 ],
-                'timestamp' => now()->toISOString(),
+                'timestamp' => now()->toIso8601String(),
             ], 503);
         }
 
@@ -38,7 +38,7 @@ class HealthController extends Controller
             'checks' => [
                 'database' => true,
             ],
-            'timestamp' => now()->toISOString(),
+            'timestamp' => now()->toIso8601String(),
         ]);
     }
 }
