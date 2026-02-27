@@ -27,7 +27,14 @@ jobs:
       - name: Notify Slack on failure
         if: failure() && secrets.ALERT_SLACK_WEBHOOK_URL != ''
         run: |
-          payload='{"text":"NextScout health monitor failed. Check Actions: '${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}'"}'
-          curl -fsS -X POST -H "Content-type: application/json" --data "${payload}" "${ALERT_SLACK_WEBHOOK_URL}"
+          webhook="$(echo "${ALERT_SLACK_WEBHOOK_URL}" | tr -d '\r\n')"
+          if [[ ! "${webhook}" =~ ^https:// ]]; then
+            echo "Skipping Slack notify: ALERT_SLACK_WEBHOOK_URL is not a valid https URL"
+            exit 0
+          fi
+
+          actions_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          payload="{\"text\":\"NextScout health monitor failed. Check Actions: ${actions_url}\"}"
+          curl -fsS -X POST -H "Content-type: application/json" --data "${payload}" "${webhook}"
         env:
           ALERT_SLACK_WEBHOOK_URL: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
