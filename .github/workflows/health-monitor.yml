@@ -11,6 +11,8 @@ permissions:
 jobs:
   check-health:
     runs-on: ubuntu-latest
+    env:
+      ALERT_SLACK_WEBHOOK_URL: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
     steps:
       - name: Check staging health
         run: |
@@ -25,7 +27,7 @@ jobs:
           PROD_HEALTHCHECK_URL: ${{ secrets.PROD_HEALTHCHECK_URL }}
 
       - name: Notify Slack on failure
-        if: failure() && secrets.ALERT_SLACK_WEBHOOK_URL != ''
+        if: ${{ failure() && env.ALERT_SLACK_WEBHOOK_URL != '' }}
         run: |
           webhook="$(echo "${ALERT_SLACK_WEBHOOK_URL}" | tr -d '\r\n')"
           if [[ ! "${webhook}" =~ ^https:// ]]; then
@@ -36,5 +38,3 @@ jobs:
           actions_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           payload="{\"text\":\"NextScout health monitor failed. Check Actions: ${actions_url}\"}"
           curl -fsS -X POST -H "Content-type: application/json" --data "${payload}" "${webhook}"
-        env:
-          ALERT_SLACK_WEBHOOK_URL: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
