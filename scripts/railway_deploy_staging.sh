@@ -18,8 +18,18 @@ done
 
 # Normalize token copied from UI and support both CLI env names.
 RAILWAY_TOKEN="$(echo "${RAILWAY_TOKEN}" | tr -d '\r\n[:space:]')"
+RAILWAY_PROJECT_ID="$(echo "${RAILWAY_PROJECT_ID}" | tr -d '\r\n[:space:]')"
+RAILWAY_ENVIRONMENT_ID="$(echo "${RAILWAY_ENVIRONMENT_ID}" | tr -d '\r\n[:space:]')"
+RAILWAY_SERVICE_ID="$(echo "${RAILWAY_SERVICE_ID}" | tr -d '\r\n[:space:]')"
+STAGING_HEALTHCHECK_URL="$(echo "${STAGING_HEALTHCHECK_URL}" | tr -d '\r\n[:space:]')"
 export RAILWAY_TOKEN
 export RAILWAY_API_TOKEN="${RAILWAY_TOKEN}"
+
+echo "RAILWAY_TOKEN length: ${#RAILWAY_TOKEN}"
+echo "RAILWAY_PROJECT_ID: ${RAILWAY_PROJECT_ID}"
+echo "RAILWAY_ENVIRONMENT_ID: ${RAILWAY_ENVIRONMENT_ID}"
+echo "RAILWAY_SERVICE_ID: ${RAILWAY_SERVICE_ID}"
+echo "STAGING_HEALTHCHECK_URL: ${STAGING_HEALTHCHECK_URL}"
 
 echo "Installing Railway CLI..."
 npm install --global @railway/cli
