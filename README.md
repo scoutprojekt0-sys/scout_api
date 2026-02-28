@@ -121,5 +121,3 @@ Kaynak ulasilamazsa endpoint otomatik olarak:
 - `docs/sales/DEMO_SCRIPT_10_MIN.md`
 - `docs/sales/PACKAGES_AND_PRICING_DRAFT.md`
 - `docs/sales/SECURITY_AND_LAUNCH_APPENDIX.md`
-=======
- feat/scout-api-hardening

@@ -19,6 +19,7 @@ Asagidaki degiskenleri Web servisine ekle:
 - `APP_DEBUG=false`
 - `APP_URL=<web service url>`
 - `APP_KEY=<php artisan key:generate --show cikisi>`
+- `LOG_CHANNEL=stderr`
 - `DB_CONNECTION=pgsql`
 - `DB_HOST=<railway postgres host>`
 - `DB_PORT=<railway postgres port>`

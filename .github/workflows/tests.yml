@@ -3,8 +3,8 @@ name: Tests
 on:
   push:
     branches:
-      - feat/scout-api-hardening
-      - fix/rc-workflow-to-feat
+      - main
+      - staging
   pull_request:
   schedule:
     - cron: '0 0 * * *'

@@ -4,8 +4,8 @@ on:
   pull_request:
   push:
     branches:
-      - feat/scout-api-hardening
-      - fix/rc-workflow-to-feat
+      - main
+      - staging
 
 permissions:
   contents: read

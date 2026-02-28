@@ -18,7 +18,7 @@
    - `APP_DEBUG=false`
    - `APP_KEY` is set
    - DB credentials
-   - `LOG_CHANNEL=ops`
+   - `LOG_CHANNEL=stderr`
    - `ALERT_SLACK_WEBHOOK_URL`
 2. Confirm health endpoints are reachable:
    - `/up`
