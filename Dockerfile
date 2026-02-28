@@ -15,8 +15,9 @@ WORKDIR /var/www/html
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     unzip \
+    libpq-dev \
     libsqlite3-dev \
-    && docker-php-ext-install pdo_sqlite bcmath \
+    && docker-php-ext-install pdo_pgsql pgsql pdo_sqlite bcmath \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=vendor /app/vendor /var/www/html/vendor
