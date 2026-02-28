@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NextScout | Dashboard</title>
+  <meta name="description" content="NextScout kullanici paneli.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Archivo+Black&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #08131d;
+      --line: #2b4660;
+      --text: #f5fbff;
+      --muted: #9bb5cb;
+      --cta: #ff5a1f;
+      --cta-2: #ff7e22;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(38, 84, 124, 0.45) 0%, transparent 36%),
+        radial-gradient(circle at 92% 0%, rgba(255, 90, 31, 0.16) 0%, transparent 26%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      width: min(1080px, 92%);
+      margin: 0 auto;
+      padding: 28px 0 44px;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      margin: 0;
+      font-family: "Archivo Black", sans-serif;
+      letter-spacing: .5px;
+      font-size: 1.1rem;
+    }
+
+    .brand span { color: var(--cta); }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid #3f6486;
+      background: rgba(34, 57, 78, 0.65);
+      color: #e5f2ff;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: .82rem;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .hero {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(160deg, rgba(18, 41, 61, 0.92), rgba(10, 22, 33, 0.96));
+      padding: 22px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-family: "Archivo Black", sans-serif;
+      font-size: clamp(1.5rem, 3.4vw, 2.2rem);
+      line-height: 1.05;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: linear-gradient(165deg, rgba(20, 42, 60, 0.86), rgba(11, 25, 37, 0.95));
+    }
+
+    .card h3 {
+      margin: 0 0 6px;
+      font-size: .86rem;
+      color: #b8cfe3;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+
+    .val {
+      margin: 0;
+      font-family: "Archivo Black", sans-serif;
+      font-size: 1.5rem;
+    }
+
+    .meta {
+      margin-top: 4px;
+      font-size: .84rem;
+      color: #d6e6f3;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: .84rem;
+      color: #d6e6f3;
+      min-height: 18px;
+    }
+
+    .status.err { color: #ff9f9f; }
+
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <p class="brand">NEXT<span>SCOUT</span> Dashboard</p>
+      <div class="actions">
+        <a class="btn" href="index.html">Ana Sayfa</a>
+        <button id="logout-btn" class="btn" type="button">Cikis Yap</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h1 id="welcome">Hos geldin</h1>
+      <p class="sub">Giris sonrasi tek panel akisi aktif. Tum yonlendirmeler bu sayfaya sabitlendi.</p>
+      <p id="status" class="status">Profil bilgisi aliniyor...</p>
+    </section>
+
+    <section class="grid" aria-label="Hizli metrikler">
+      <article class="card">
+        <h3>Oyuncu Sayisi</h3>
+        <p id="players" class="val">-</p>
+        <p class="meta">Sistemde gorunen oyuncular</p>
+      </article>
+      <article class="card">
+        <h3>Takim Sayisi</h3>
+        <p id="teams" class="val">-</p>
+        <p class="meta">Aktif kulup ve akademiler</p>
+      </article>
+      <article class="card">
+        <h3>Acilan Firsat</h3>
+        <p id="opps" class="val">-</p>
+        <p class="meta">Son firsat kayitlari</p>
+      </article>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      const DEFAULT_LIVE_API_BASE = "https://scout-api-91m6.onrender.com/api";
+      const params = new URLSearchParams(window.location.search);
+      const apiBase = params.get("api_base") || localStorage.getItem("nextscout_api_base") || window.NEXTSCOUT_API_BASE || DEFAULT_LIVE_API_BASE;
+      const token = localStorage.getItem("nextscout_token");
+
+      const toLogin = () => {
+        const suffix = params.get("api_base") ? "?api_base=" + encodeURIComponent(params.get("api_base")) : "";
+        window.location.href = "login.html" + suffix;
+      };
+
+      if (!token) {
+        toLogin();
+        return;
+      }
+
+      const headers = {
+        "Authorization": "Bearer " + token,
+        "Accept": "application/json"
+      };
+
+      const welcome = document.getElementById("welcome");
+      const status = document.getElementById("status");
+      const players = document.getElementById("players");
+      const teams = document.getElementById("teams");
+      const opps = document.getElementById("opps");
+      const logoutBtn = document.getElementById("logout-btn");
+
+      const requestJson = async (url) => {
+        const response = await fetch(url, { headers });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        return response.json();
+      };
+
+      const setNumber = (el, value) => {
+        el.textContent = typeof value === "number" ? value.toLocaleString("tr-TR") : "-";
+      };
+
+      const load = async () => {
+        try {
+          const [me, playerRes, teamRes, oppRes] = await Promise.all([
+            requestJson(apiBase + "/auth/me"),
+            requestJson(apiBase + "/players?per_page=1"),
+            requestJson(apiBase + "/teams?per_page=1"),
+            requestJson(apiBase + "/opportunities?per_page=1")
+          ]);
+
+          const user = me?.data || {};
+          welcome.textContent = "Hos geldin, " + (user.name || "Kullanici");
+          status.textContent = "Rol: " + (user.role || "-") + " | E-posta: " + (user.email || "-");
+
+          setNumber(players, playerRes?.data?.total);
+          setNumber(teams, teamRes?.data?.total);
+          setNumber(opps, oppRes?.data?.total);
+        } catch (error) {
+          status.classList.add("err");
+          status.textContent = "Panel verileri alinamadi. Oturum gecersiz olabilir.";
+          setNumber(players, null);
+          setNumber(teams, null);
+          setNumber(opps, null);
+        }
+      };
+
+      logoutBtn.addEventListener("click", async () => {
+        try {
+          await fetch(apiBase + "/auth/logout", { method: "POST", headers });
+        } catch (_) {}
+        localStorage.removeItem("nextscout_token");
+        toLogin();
+      });
+
+      load();
+    })();
+  </script>
+</body>
+</html>

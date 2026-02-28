@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NextScout | Canli Mac Skorlari</title>
+  <meta name="description" content="Canli mac skorlarini anlik takip edin.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Archivo+Black&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #05070b;
+      --line: #2a3242;
+      --text: #f7f8fb;
+      --muted: #a7b0c2;
+      --cta: #f2c400;
+      --cta-2: #ffdc42;
+      --panel: rgba(20, 24, 33, 0.93);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: "Space Grotesk", sans-serif;
+      background:
+        radial-gradient(circle at 8% 8%, rgba(242, 196, 0, 0.15) 0%, transparent 32%),
+        radial-gradient(circle at 100% 0%, rgba(242, 196, 0, 0.1) 0%, transparent 24%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      width: min(980px, 92%);
+      margin: 0 auto;
+      padding: 26px 0 42px;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .brand {
+      margin: 0;
+      font-family: "Archivo Black", sans-serif;
+      letter-spacing: .5px;
+      font-size: 1.1rem;
+    }
+
+    .brand span { color: var(--cta); }
+
+    .home {
+      text-decoration: none;
+      color: #0d1118;
+      background: linear-gradient(135deg, var(--cta), var(--cta-2));
+      border-radius: 9px;
+      font-weight: 800;
+      font-size: .8rem;
+      padding: 9px 12px;
+    }
+
+    .status {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: .86rem;
+    }
+
+    .board {
+      display: grid;
+      gap: 10px;
+    }
+
+    .match {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .meta {
+      color: #b8cfe3;
+      font-size: .78rem;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+
+    .teams {
+      margin: 0;
+      font-size: .96rem;
+      font-weight: 700;
+    }
+
+    .score {
+      font-family: "Archivo Black", sans-serif;
+      font-size: 1.35rem;
+      color: var(--cta);
+      white-space: nowrap;
+    }
+
+    .empty {
+      border: 1px dashed #4b5569;
+      border-radius: 12px;
+      padding: 16px;
+      color: #c9d6e6;
+      background: rgba(20,24,33,.65);
+      font-size: .9rem;
+    }
+
+    @media (max-width: 640px) {
+      .match {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .score { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <p class="brand">NEXT<span>SCOUT</span> CANLI</p>
+      <a class="home" href="index.html">Ana Sayfa</a>
+    </header>
+
+    <p id="status" class="status">Canli skorlar yukleniyor...</p>
+    <section id="board" class="board" aria-label="Canli mac listesi"></section>
+  </div>
+
+  <script>
+    (function () {
+      const DEFAULT_LIVE_API_BASE = "https://scout-api-91m6.onrender.com/api";
+      const params = new URLSearchParams(window.location.search);
+      const API_BASE =
+        params.get("api_base") ||
+        localStorage.getItem("nextscout_api_base") ||
+        window.NEXTSCOUT_API_BASE ||
+        DEFAULT_LIVE_API_BASE;
+
+      const board = document.getElementById("board");
+      const statusEl = document.getElementById("status");
+
+      const formatKickoff = (value) => {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "Saat bilgisi yok";
+        return new Intl.DateTimeFormat("tr-TR", {
+          hour: "2-digit",
+          minute: "2-digit"
+        }).format(date);
+      };
+
+      const render = (items) => {
+        if (!Array.isArray(items) || items.length === 0) {
+          board.innerHTML = '<div class="empty">Su an canli mac bulunamadi.</div>';
+          return;
+        }
+
+        board.innerHTML = items.map((m) => {
+          const comp = m.competition || "Lig";
+          const state = m.status || "LIVE";
+          const home = m.home_team || "Ev Sahibi";
+          const away = m.away_team || "Deplasman";
+          const scoreHome = Number.isFinite(m.score_home) ? m.score_home : 0;
+          const scoreAway = Number.isFinite(m.score_away) ? m.score_away : 0;
+          const kickoff = formatKickoff(m.kickoff_at);
+
+          return (
+            '<article class="match">' +
+              '<div>' +
+                '<div class="meta">' + comp + ' | ' + state + ' | Baslangic ' + kickoff + '</div>' +
+                '<p class="teams">' + home + ' - ' + away + '</p>' +
+              '</div>' +
+              '<div class="score">' + scoreHome + ' : ' + scoreAway + '</div>' +
+            '</article>'
+          );
+        }).join("");
+      };
+
+      const load = async () => {
+        statusEl.textContent = "Canli skorlar guncelleniyor...";
+
+        try {
+          const response = await fetch(API_BASE + "/matches/live?limit=20", {
+            headers: { "Accept": "application/json" }
+          });
+          if (!response.ok) throw new Error("HTTP " + response.status);
+
+          const payload = await response.json();
+          render(payload?.data || []);
+          const source = payload?.source === "external" ? "dis kaynak" : "yedek kaynak";
+          statusEl.textContent = "Son guncelleme: " + new Date().toLocaleTimeString("tr-TR") + " | Kaynak: " + source;
+        } catch (_) {
+          board.innerHTML = '<div class="empty">Canli skor servisine su an ulasilamiyor.</div>';
+          statusEl.textContent = "Baglanti hatasi. Birazdan tekrar denenecek.";
+        }
+      };
+
+      load();
+      setInterval(load, 30000);
+    })();
+  </script>
+</body>
+</html>
