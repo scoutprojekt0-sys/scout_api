@@ -29,4 +29,13 @@ class UpdateMeRequest extends FormRequest
             'phone' => ['sometimes', 'nullable', 'string', 'max:30'],
         ];
     }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('email')) {
+            $this->merge([
+                'email' => strtolower((string) $this->input('email')),
+            ]);
+        }
+    }
 }

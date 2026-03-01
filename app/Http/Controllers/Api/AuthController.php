@@ -9,6 +9,7 @@ use App\Http\Requests\Auth\UpdateMeRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -18,14 +19,21 @@ class AuthController extends Controller
     {
         $data = $request->validated();
 
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => strtolower($data['email']),
-            'password' => Hash::make($data['password']),
-            'role' => $data['role'],
-            'city' => $data['city'] ?? null,
-            'phone' => $data['phone'] ?? null,
-        ]);
+        /** @var User $user */
+        $user = DB::transaction(function () use ($data): User {
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => strtolower($data['email']),
+                'password' => Hash::make($data['password']),
+                'role' => $data['role'],
+                'city' => $data['city'] ?? null,
+                'phone' => $data['phone'] ?? null,
+            ]);
+
+            $this->createRoleProfile($user);
+
+            return $user;
+        });
 
         $token = $user->createToken('api-token')->plainTextToken;
 
@@ -37,6 +45,36 @@ class AuthController extends Controller
                 'user' => $user,
             ],
         ], 201);
+    }
+
+    private function createRoleProfile(User $user): void
+    {
+        if ($user->role === 'player') {
+            DB::table('player_profiles')->insert([
+                'user_id' => (int) $user->id,
+                'updated_at' => now(),
+            ]);
+
+            return;
+        }
+
+        if ($user->role === 'team') {
+            DB::table('team_profiles')->insert([
+                'user_id' => (int) $user->id,
+                'team_name' => (string) $user->name,
+                'updated_at' => now(),
+            ]);
+
+            return;
+        }
+
+        if (in_array($user->role, ['manager', 'coach', 'scout'], true)) {
+            DB::table('staff_profiles')->insert([
+                'user_id' => (int) $user->id,
+                'role_type' => $user->role,
+                'updated_at' => now(),
+            ]);
+        }
     }
 
     public function login(LoginRequest $request): JsonResponse

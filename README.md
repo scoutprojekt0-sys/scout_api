@@ -113,6 +113,11 @@ Kaynak ulasilamazsa endpoint otomatik olarak:
 ## Operations
 
 - `docs/runbooks/CI_RULESET_ALIGNMENT.md`: required check names, ruleset alignment, and PR merge-block recovery steps.
+- `docs/runbooks/DEPLOY_CHECKLIST.md`: production deploy adimlari, smoke test ve rollback plani.
+
+## API Docs
+
+- `docs/API_REFERENCE.md`: endpoint listesi, auth gereksinimleri ve query parametreleri.
 
 ## Sales
 

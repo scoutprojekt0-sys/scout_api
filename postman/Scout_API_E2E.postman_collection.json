@@ -1,343 +1,807 @@
 {
-  "info": {
-    "_postman_id": "6f8a49a2-6bd9-4f3d-9f66-2b85ec9f5e79",
-    "name": "Scout API E2E",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "exec": [
-          "if (!pm.environment.get('run_id')) {",
-          "  pm.environment.unset('team_token');",
-          "  pm.environment.unset('player_token');",
-          "  pm.environment.unset('team_user_id');",
-          "  pm.environment.unset('player_user_id');",
-          "  pm.environment.unset('opportunity_id');",
-          "  pm.environment.unset('application_id');",
-          "  pm.environment.set('run_id', Date.now().toString());",
-          "}"
-        ]
-      }
-    }
-  ],
-  "item": [
-    {
-      "name": "Auth - Register Team",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('register team status', function () { pm.response.to.have.status(201); });",
-              "const res = pm.response.json();",
-              "pm.test('register team ok', function () { pm.expect(res.ok).to.eql(true); });",
-              "pm.environment.set('team_token', res.data.token);",
-              "pm.environment.set('team_user_id', String(res.data.user.id));"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"name\":\"Team User {{run_id}}\",\"email\":\"team+{{run_id}}@example.com\",\"password\":\"Password123\",\"password_confirmation\":\"Password123\",\"role\":\"team\",\"city\":\"Istanbul\"}"
-        },
-        "url": "{{base_url}}/api/auth/register"
-      }
-    },
-    {
-      "name": "Auth - Register Player",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('register player status', function () { pm.response.to.have.status(201); });",
-              "const res = pm.response.json();",
-              "pm.test('register player ok', function () { pm.expect(res.ok).to.eql(true); });",
-              "pm.environment.set('player_token', res.data.token);",
-              "pm.environment.set('player_user_id', String(res.data.user.id));"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"name\":\"Player User {{run_id}}\",\"email\":\"player+{{run_id}}@example.com\",\"password\":\"Password123\",\"password_confirmation\":\"Password123\",\"role\":\"player\",\"city\":\"Ankara\"}"
-        },
-        "url": "{{base_url}}/api/auth/register"
-      }
-    },
-    {
-      "name": "Auth - Login Team",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('login team status', function () { pm.response.to.have.status(200); });",
-              "const res = pm.response.json();",
-              "pm.environment.set('team_token', res.data.token);"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"email\":\"team+{{run_id}}@example.com\",\"password\":\"Password123\"}"
-        },
-        "url": "{{base_url}}/api/auth/login"
-      }
-    },
-    {
-      "name": "Opportunity - Create",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('opportunity created', function () { pm.response.to.have.status(201); });",
-              "const res = pm.response.json();",
-              "pm.environment.set('opportunity_id', String(res.data.id));"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{team_token}}" },
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"title\":\"Scout Needed {{run_id}}\",\"position\":\"FW\",\"city\":\"Istanbul\",\"status\":\"open\"}"
-        },
-        "url": "{{base_url}}/api/opportunities"
-      }
-    },
-    {
-      "name": "Auth - Login Player",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('login player status', function () { pm.response.to.have.status(200); });",
-              "const res = pm.response.json();",
-              "pm.environment.set('player_token', res.data.token);"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"email\":\"player+{{run_id}}@example.com\",\"password\":\"Password123\"}"
-        },
-        "url": "{{base_url}}/api/auth/login"
-      }
-    },
-    {
-      "name": "Application - Apply",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('application created', function () { pm.response.to.have.status(201); });",
-              "const res = pm.response.json();",
-              "pm.environment.set('application_id', String(res.data.id));"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{player_token}}" },
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"message\":\"I am interested\"}"
-        },
-        "url": "{{base_url}}/api/opportunities/{{opportunity_id}}/apply"
-      }
-    },
-    {
-      "name": "Application - Incoming (Team)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('incoming status', function () { pm.response.to.have.status(200); });",
-              "const res = pm.response.json();",
-              "pm.test('incoming has data', function () { pm.expect(res.data.data.length).to.be.above(0); });"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{team_token}}" }
-        ],
-        "url": "{{base_url}}/api/applications/incoming"
-      }
-    },
-    {
-      "name": "Application - Change Status",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('change status ok', function () { pm.response.to.have.status(200); });",
-              "const res = pm.response.json();",
-              "pm.test('application accepted', function () { pm.expect(res.data.status).to.eql('accepted'); });"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "PATCH",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{team_token}}" },
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"status\":\"accepted\"}"
-        },
-        "url": "{{base_url}}/api/applications/{{application_id}}/status"
-      }
-    },
-    {
-      "name": "Contact - Send Message",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('contact sent', function () { pm.response.to.have.status(201); });"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{player_token}}" },
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"to_user_id\":{{team_user_id}},\"subject\":\"Hello\",\"message\":\"Can we talk?\"}"
-        },
-        "url": "{{base_url}}/api/contacts"
-      }
-    },
-    {
-      "name": "Contact - Inbox",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('inbox status', function () { pm.response.to.have.status(200); });",
-              "const res = pm.response.json();",
-              "pm.test('inbox has data', function () { pm.expect(res.data.data.length).to.be.above(0); });"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{team_token}}" }
-        ],
-        "url": "{{base_url}}/api/contacts/inbox"
-      }
-    },
-    {
-      "name": "Media - Upload",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('media uploaded', function () { pm.response.to.have.status(201); });"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{player_token}}" }
-        ],
-        "body": {
-          "mode": "formdata",
-          "formdata": [
-            {
-              "key": "file",
-              "type": "file",
-              "src": "{{media_file_path}}"
-            },
-            {
-              "key": "title",
-              "type": "text",
-              "value": "Highlight"
-            }
-          ]
-        },
-        "url": "{{base_url}}/api/media"
-      }
-    }
-  ],
-  "variable": [
-    { "key": "base_url", "value": "http://127.0.0.1:8000" },
-    { "key": "run_id", "value": "" },
-    { "key": "team_token", "value": "" },
-    { "key": "player_token", "value": "" },
-    { "key": "team_user_id", "value": "" },
-    { "key": "player_user_id", "value": "" },
-    { "key": "opportunity_id", "value": "" },
-    { "key": "application_id", "value": "" },
-    { "key": "media_file_path", "value": "C:/Users/Hp/PhpstormProjects/untitled/scout_api/postman/sample.png" }
-  ]
+    "info":  {
+                 "_postman_id":  "6f8a49a2-6bd9-4f3d-9f66-2b85ec9f5e79",
+                 "name":  "Scout API E2E",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             },
+    "item":  [
+                 {
+                     "name":  "Auth",
+                     "item":  [
+                                  {
+                                      "name":  "Auth - Register Team",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"name\": \"Team User\",\n  \"email\": \"team@example.com\",\n  \"password\": \"Password123\",\n  \"password_confirmation\": \"Password123\",\n  \"role\": \"team\",\n  \"city\": \"Istanbul\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/auth/register"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Auth - Register Player",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"name\": \"Player User\",\n  \"email\": \"player@example.com\",\n  \"password\": \"Password123\",\n  \"password_confirmation\": \"Password123\",\n  \"role\": \"player\",\n  \"city\": \"Ankara\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/auth/register"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Auth - Register Staff",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"name\": \"Scout Staff\",\n  \"email\": \"staff@example.com\",\n  \"password\": \"Password123\",\n  \"password_confirmation\": \"Password123\",\n  \"role\": \"scout\",\n  \"city\": \"Izmir\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/auth/register"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Auth - Login Team",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"team@example.com\",\n  \"password\": \"Password123\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/auth/login"
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027status is 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027team token exists\u0027, function () { pm.expect(json?.data?.token).to.be.a(\u0027string\u0027).and.not.empty; });",
+                                                                                    "if (json?.data?.token) pm.collectionVariables.set(\u0027team_token\u0027, json.data.token);",
+                                                                                    "if (json?.data?.user?.id) pm.collectionVariables.set(\u0027team_user_id\u0027, String(json.data.user.id));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Auth - Login Player",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"player@example.com\",\n  \"password\": \"Password123\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/auth/login"
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027status is 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027player token exists\u0027, function () { pm.expect(json?.data?.token).to.be.a(\u0027string\u0027).and.not.empty; });",
+                                                                                    "if (json?.data?.token) pm.collectionVariables.set(\u0027player_token\u0027, json.data.token);",
+                                                                                    "if (json?.data?.user?.id) pm.collectionVariables.set(\u0027player_user_id\u0027, String(json.data.user.id));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Auth - Login Staff",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"staff@example.com\",\n  \"password\": \"Password123\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/auth/login"
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027status is 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027staff token exists\u0027, function () { pm.expect(json?.data?.token).to.be.a(\u0027string\u0027).and.not.empty; });",
+                                                                                    "if (json?.data?.token) pm.collectionVariables.set(\u0027staff_token\u0027, json.data.token);",
+                                                                                    "if (json?.data?.user?.id) pm.collectionVariables.set(\u0027staff_user_id\u0027, String(json.data.user.id));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Auth - Me (Team)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{team_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/auth/me"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Auth - Update Me (Player)",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{player_token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"city\": \"Bursa\",\n  \"phone\": \"+90 500 000 00 00\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/auth/me"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Auth - Logout Team",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{team_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/auth/logout"
+                                                  }
+                                  }
+                              ],
+                     "description":  "Kayit, giris, profil bilgisi ve cikis endpointleri."
+                 },
+                 {
+                     "name":  "News",
+                     "item":  [
+                                  {
+                                      "name":  "News - Live",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "{{base_url}}/api/news/live"
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027status is 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027news payload exists\u0027, function () { pm.expect(Array.isArray(json?.data)).to.eql(true); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ],
+                     "description":  "Canli haber akisi endpointi."
+                 },
+                 {
+                     "name":  "Opportunity",
+                     "item":  [
+                                  {
+                                      "name":  "Opportunity - Create",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{team_token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"title\": \"Scout Needed\",\n  \"position\": \"FW\",\n  \"city\": \"Istanbul\",\n  \"status\": \"open\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/opportunities"
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027status is 201\u0027, function () { pm.response.to.have.status(201); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027opportunity id exists\u0027, function () { pm.expect(json?.data?.id).to.exist; });",
+                                                                                    "if (json?.data?.id) pm.collectionVariables.set(\u0027opportunity_id\u0027, String(json.data.id));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Opportunity - List",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{team_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/opportunities?status=open\u0026page=1\u0026per_page=10"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Opportunity - Show",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{team_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/opportunities/{{opportunity_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Opportunity - Update",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{team_token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"details\": \"Updated trial details\",\n  \"status\": \"open\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/opportunities/{{opportunity_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Opportunity - Delete",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{team_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/opportunities/{{opportunity_id}}"
+                                                  }
+                                  }
+                              ],
+                     "description":  "Ilan olusturma, listeleme, detay, guncelleme ve silme akisi."
+                 },
+                 {
+                     "name":  "Application",
+                     "item":  [
+                                  {
+                                      "name":  "Application - Apply",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{player_token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"message\": \"I am interested\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/opportunities/{{opportunity_id}}/apply"
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027status is 201\u0027, function () { pm.response.to.have.status(201); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027application created\u0027, function () { pm.expect(json?.ok).to.eql(true); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Application - Outgoing (Player)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{player_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/applications/outgoing"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Application - Incoming (Team)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{team_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/applications/incoming"
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027status is 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "const first = json?.data?.data?.[0];",
+                                                                                    "if (first?.id) pm.collectionVariables.set(\u0027application_id\u0027, String(first.id));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Application - Change Status",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{team_token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"status\": \"accepted\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/applications/{{application_id}}/status"
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027status is 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027application accepted\u0027, function () { pm.expect(json?.data?.status).to.eql(\u0027accepted\u0027); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ],
+                     "description":  "Oyuncu basvurusu, gelen/giden basvurular ve durum guncelleme."
+                 },
+                 {
+                     "name":  "Contact",
+                     "item":  [
+                                  {
+                                      "name":  "Contact - Send Message",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{player_token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"to_user_id\": {{team_user_id}},\n  \"subject\": \"Hello\",\n  \"message\": \"Can we talk?\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/contacts"
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027status is 201\u0027, function () { pm.response.to.have.status(201); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "if (json?.data?.id) pm.collectionVariables.set(\u0027contact_id\u0027, String(json.data.id));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Contact - Inbox",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{team_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/contacts/inbox"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Contact - Sent",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{player_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/contacts/sent"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Contact - Change Status",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{team_token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"status\": \"read\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/contacts/{{contact_id}}/status"
+                                                  }
+                                  }
+                              ],
+                     "description":  "Mesaj gonderme, gelen/giden kutusu ve mesaj durum yonetimi."
+                 },
+                 {
+                     "name":  "Media",
+                     "item":  [
+                                  {
+                                      "name":  "Media - Upload",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{player_token}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "formdata",
+                                                                   "formdata":  [
+                                                                                    {
+                                                                                        "key":  "file",
+                                                                                        "type":  "file",
+                                                                                        "src":  "{{media_file_path}}"
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "title",
+                                                                                        "type":  "text",
+                                                                                        "value":  "Highlight"
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                      "url":  "{{base_url}}/api/media"
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027status is 201\u0027, function () { pm.response.to.have.status(201); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "if (json?.data?.id) pm.collectionVariables.set(\u0027media_id\u0027, String(json.data.id));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Media - List By User",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{player_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/users/{{player_user_id}}/media"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Media - Delete",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{player_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/media/{{media_id}}"
+                                                  }
+                                  }
+                              ],
+                     "description":  "Media yukleme, kullaniciya gore listeleme ve silme."
+                 },
+                 {
+                     "name":  "Profiles",
+                     "item":  [
+                                  {
+                                      "name":  "Players - List",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{staff_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/players?city=Ankara\u0026per_page=10"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Players - Show",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{staff_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/players/{{player_user_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Players - Update",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{player_token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"position\": \"ST\",\n  \"dominant_foot\": \"right\",\n  \"bio\": \"Updated player bio\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/players/{{player_user_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Teams - List",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{staff_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/teams?page=1\u0026per_page=10"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Teams - Show",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{staff_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/teams/{{team_user_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Teams - Update",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{team_token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"needs_text\": \"Need fast winger\",\n  \"league_level\": \"2\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/teams/{{team_user_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Staff - List",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{team_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/staff?role_type=scout\u0026page=1\u0026per_page=10"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Staff - Show",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{team_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{base_url}}/api/staff/{{staff_user_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Staff - Update",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{staff_token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"organization\": \"Next Scout Org\",\n  \"experience_years\": 6,\n  \"bio\": \"Updated staff bio\"\n}"
+                                                               },
+                                                      "url":  "{{base_url}}/api/staff/{{staff_user_id}}"
+                                                  }
+                                  }
+                              ],
+                     "description":  "Player/Team/Staff listeleme, detay ve profil guncelleme endpointleri."
+                 }
+             ],
+    "variable":  [
+                     {
+                         "key":  "base_url",
+                         "value":  "http://127.0.0.1:8000"
+                     },
+                     {
+                         "key":  "team_token",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "player_token",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "staff_token",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "team_user_id",
+                         "value":  "1"
+                     },
+                     {
+                         "key":  "player_user_id",
+                         "value":  "2"
+                     },
+                     {
+                         "key":  "staff_user_id",
+                         "value":  "3"
+                     },
+                     {
+                         "key":  "opportunity_id",
+                         "value":  "1"
+                     },
+                     {
+                         "key":  "application_id",
+                         "value":  "1"
+                     },
+                     {
+                         "key":  "contact_id",
+                         "value":  "1"
+                     },
+                     {
+                         "key":  "media_id",
+                         "value":  "1"
+                     },
+                     {
+                         "key":  "media_file_path",
+                         "value":  "C:/tmp/sample.jpg"
+                     }
+                 ]
 }

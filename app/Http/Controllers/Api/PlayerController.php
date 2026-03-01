@@ -16,8 +16,8 @@ class PlayerController extends Controller
         $validated = $request->validate([
             'position' => ['nullable', 'string', 'max:40'],
             'city' => ['nullable', 'string', 'max:80'],
-            'age_min' => ['nullable', 'integer', 'min:10', 'max:60'],
-            'age_max' => ['nullable', 'integer', 'min:10', 'max:60'],
+            'age_min' => ['nullable', 'integer', 'min:10', 'max:60', 'lte:age_max'],
+            'age_max' => ['nullable', 'integer', 'min:10', 'max:60', 'gte:age_min'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);

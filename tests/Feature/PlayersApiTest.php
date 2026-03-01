@@ -47,6 +47,23 @@ class PlayersApiTest extends TestCase
         $response->assertJsonPath('data.data.0.position', 'ST');
     }
 
+    public function test_players_index_rejects_invalid_age_range(): void
+    {
+        $admin = User::query()->create([
+            'name' => 'Scout Admin',
+            'email' => 'admin2@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'scout',
+        ]);
+
+        Sanctum::actingAs($admin);
+
+        $response = $this->getJson('/api/players?age_min=30&age_max=18');
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['age_min']);
+    }
+
     private function seedPlayer(
         string $name,
         string $email,
