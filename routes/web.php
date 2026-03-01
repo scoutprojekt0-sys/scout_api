@@ -9,7 +9,6 @@ Route::get('/', function () {
 
 Route::get('/health/live', [HealthController::class, 'live']);
 Route::get('/health/ready', [HealthController::class, 'ready']);
-
 Route::view('/login', 'login');
 Route::view('/live-scores', 'live-scores');
 
