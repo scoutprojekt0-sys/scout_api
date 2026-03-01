@@ -2,10 +2,22 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class HealthEndpointsTest extends TestCase
 {
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Storage::fake('local');
+        config(['filesystems.default' => 'local']);
+    }
+
     public function test_health_live_endpoint_is_available(): void
     {
         $response = $this->getJson('/health/live');
