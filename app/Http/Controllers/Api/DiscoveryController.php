@@ -16,6 +16,7 @@ class DiscoveryController extends Controller
     public function managerNeeds(Request $request): JsonResponse
     {
         if ($request->isMethod('post')) {
+            $authName = trim((string) optional($request->user())->name);
             $validated = $request->validate([
                 'author_name' => ['nullable', 'string', 'max:255'],
                 'title' => ['required', 'string', 'max:255'],
@@ -33,7 +34,7 @@ class DiscoveryController extends Controller
 
             $row = DiscoveryPost::query()->create([
                 'author_role' => 'manager',
-                'author_name' => $validated['author_name'] ?? null,
+                'author_name' => !empty($validated['author_name']) ? $validated['author_name'] : ($authName !== '' ? $authName : null),
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
                 'position' => $validated['position'] ?? null,
@@ -68,6 +69,7 @@ class DiscoveryController extends Controller
     public function coachNeeds(Request $request): JsonResponse
     {
         if ($request->isMethod('post')) {
+            $authName = trim((string) optional($request->user())->name);
             $validated = $request->validate([
                 'author_name' => ['nullable', 'string', 'max:255'],
                 'title' => ['required', 'string', 'max:255'],
@@ -76,7 +78,7 @@ class DiscoveryController extends Controller
 
             $row = DiscoveryPost::query()->create([
                 'author_role' => 'coach',
-                'author_name' => $validated['author_name'] ?? null,
+                'author_name' => !empty($validated['author_name']) ? $validated['author_name'] : ($authName !== '' ? $authName : null),
                 'title' => $validated['title'],
                 'description' => $validated['description'],
             ]);
@@ -102,6 +104,7 @@ class DiscoveryController extends Controller
     public function boosts(Request $request): JsonResponse
     {
         if ($request->isMethod('post')) {
+            $authName = trim((string) optional($request->user())->name);
             $validated = $request->validate([
                 'name' => ['required', 'string', 'max:255'],
                 'position' => ['nullable', 'string', 'max:40'],
@@ -116,7 +119,7 @@ class DiscoveryController extends Controller
             ]);
 
             $row = BoostProfile::query()->create([
-                'name' => $validated['name'],
+                'name' => $validated['name'] ?: ($authName !== '' ? $authName : 'Oyuncu'),
                 'position' => $validated['position'] ?? null,
                 'city' => $validated['city'] ?? null,
                 'summary' => $validated['summary'] ?? null,
@@ -247,4 +250,3 @@ class DiscoveryController extends Controller
         ]);
     }
 }
-

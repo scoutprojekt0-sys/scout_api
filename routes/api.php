@@ -459,11 +459,8 @@ Route::get('/notifications/public', [NotificationController::class, 'publicList'
 
 // ========== DISCOVERY (Manager/Coach Needs + Boost + Weekly Digest) ==========
 Route::get('/discovery/manager-needs', [DiscoveryController::class, 'managerNeeds']);
-Route::post('/discovery/manager-needs', [DiscoveryController::class, 'managerNeeds']);
 Route::get('/discovery/coach-needs', [DiscoveryController::class, 'coachNeeds']);
-Route::post('/discovery/coach-needs', [DiscoveryController::class, 'coachNeeds']);
 Route::get('/discovery/boosts', [DiscoveryController::class, 'boosts']);
-Route::post('/discovery/boosts', [DiscoveryController::class, 'boosts']);
 Route::post('/discovery/player-views/track', [DiscoveryController::class, 'trackPlayerView']);
 Route::get('/discovery/top-viewed', [DiscoveryController::class, 'topViewedPlayers']);
 Route::get('/discovery/weekly-digest', [DiscoveryController::class, 'weeklyDigest']);
@@ -513,6 +510,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Mobile Device
     Route::post('/mobile/register-device', [\App\Http\Controllers\Api\MobileController::class, 'registerDevice']);
+
+    // Discovery write actions (protected)
+    Route::post('/discovery/manager-needs', [DiscoveryController::class, 'managerNeeds'])->middleware('throttle:30,1');
+    Route::post('/discovery/coach-needs', [DiscoveryController::class, 'coachNeeds'])->middleware('throttle:30,1');
+    Route::post('/discovery/boosts', [DiscoveryController::class, 'boosts'])->middleware('throttle:20,1');
 });
 
 // ========== LEGAL SERVICES (HUKUK OFİSİ) ==========
@@ -543,6 +545,12 @@ Route::get('/featured', [\App\Http\Controllers\Api\FeaturedController::class, 'g
 Route::get('/rising-stars', [\App\Http\Controllers\Api\FeaturedController::class, 'getRisingStars']);
 Route::get('/hot-transfers', [\App\Http\Controllers\Api\FeaturedController::class, 'getHotTransfers']);
 Route::get('/player-of-week', [\App\Http\Controllers\Api\FeaturedController::class, 'getPlayerOfWeek']);
+
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    Route::get('/featured/admin', [\App\Http\Controllers\Api\FeaturedController::class, 'adminList']);
+    Route::post('/featured/admin', [\App\Http\Controllers\Api\FeaturedController::class, 'adminStore']);
+    Route::patch('/featured/admin/{id}/active', [\App\Http\Controllers\Api\FeaturedController::class, 'adminToggleActive']);
+});
 
 // ========== CLUB NEEDS ==========
 Route::get('/club-needs', [\App\Http\Controllers\Api\ClubNeedsController::class, 'index']);
