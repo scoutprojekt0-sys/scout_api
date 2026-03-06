@@ -1,12 +1,74 @@
 <?php
 
+use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\HealthController;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+// Anasayfa - Serve static index.html directly (no CORS issues)
+Route::get('/', function() {
+    $indexPath = base_path('../index.html');
+    if (file_exists($indexPath)) {
+        return response()->file($indexPath);
+    }
+
+    // Fallback to blade view
+    $stats = [
+        'scouts' => '15K',
+        'videos' => '50K',
+        'transfers' => '1,234',
+        'satisfaction' => '92'
+    ];
+    return view('index', ['stats' => $stats]);
+})->name('home');
+
+// Live Matches sayfası
+Route::get('/live-matches', function() {
+    return view('live-matches');
+})->name('live-matches');
+
+// Notifications sayfası
+Route::get('/notifications', function () {
+    return view('notifications');
+})->name('notifications');
+
+// Advanced Search
+Route::get('/advanced-search', function() {
+    return view('advanced-search');
+})->name('advanced-search');
+
+// Giriş yapanlar için dashboard
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/dashboard', [FrontendController::class, 'showDashboard'])->name('dashboard');
+
+    // Role-specific dashboards
+    Route::get('/dashboard/player', function() {
+        return view('dashboards.player');
+    })->name('dashboard.player');
+
+    Route::get('/dashboard/scout', function() {
+        return view('dashboards.scout');
+    })->name('dashboard.scout');
+
+    Route::get('/dashboard/manager', function() {
+        return view('dashboards.manager');
+    })->name('dashboard.manager');
+
+    Route::get('/dashboard/club', function() {
+        return view('dashboards.club');
+    })->name('dashboard.club');
+
+    Route::get('/dashboard/lawyer', function() {
+        return view('dashboards.lawyer');
+    })->name('dashboard.lawyer');
+
 });
 
 Route::view('/admin', 'admin-dashboard');
@@ -22,3 +84,15 @@ Route::get('/lang/{locale}', function (Request $request, string $locale): Redire
 
     return redirect()->back();
 });
+
+// Serve root-level static html pages from project folder (e.g. /favorites.html)
+Route::get('/{page}.html', function ($page) {
+    $safePage = preg_replace('/[^a-zA-Z0-9._-]/', '', (string) $page);
+    $filePath = base_path('../' . $safePage . '.html');
+
+    if (file_exists($filePath)) {
+        return response()->file($filePath);
+    }
+
+    abort(404);
+})->where('page', '[A-Za-z0-9._-]+');
