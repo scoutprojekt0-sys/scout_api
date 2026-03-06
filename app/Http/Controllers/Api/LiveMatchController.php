@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\LiveMatch;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class LiveMatchController extends Controller
 {
@@ -157,6 +160,7 @@ class LiveMatchController extends Controller
                     'sport' => $meta['sport'] ?? null,
                     'focus' => $meta['focus'] ?? null,
                     'stream_url' => $meta['stream_url'] ?? null,
+                    'stream_links' => is_array($meta['stream_links'] ?? null) ? $meta['stream_links'] : [],
                     'note' => $meta['note'] ?? null,
                     'scout_name' => $meta['scout_name'] ?? null,
                 ];
@@ -185,6 +189,11 @@ class LiveMatchController extends Controller
             'sport' => ['nullable', 'string', 'max:40'],
             'focus' => ['nullable', 'string', 'max:255'],
             'stream_url' => ['nullable', 'url', 'max:500'],
+            'stream_links' => ['nullable', 'array'],
+            'stream_links.youtube' => ['nullable', 'url', 'max:500'],
+            'stream_links.instagram' => ['nullable', 'url', 'max:500'],
+            'stream_links.facebook' => ['nullable', 'url', 'max:500'],
+            'stream_links.x' => ['nullable', 'url', 'max:500'],
             'note' => ['nullable', 'string', 'max:2000'],
             'league' => ['nullable', 'string', 'max:120'],
             'home_team' => ['nullable', 'string', 'max:120'],
@@ -201,6 +210,7 @@ class LiveMatchController extends Controller
             'sport' => $validated['sport'] ?? null,
             'focus' => $validated['focus'] ?? null,
             'stream_url' => $validated['stream_url'] ?? null,
+            'stream_links' => is_array($validated['stream_links'] ?? null) ? $validated['stream_links'] : [],
             'note' => $validated['note'] ?? null,
             'scout_name' => $scoutName,
         ];
@@ -236,35 +246,57 @@ class LiveMatchController extends Controller
     public function show(Request $request, $id)
     {
         try {
-            // TODO: Replace with real match details source
+            $record = LiveMatch::query()->findOrFail((int) $id);
+            $meta = $this->decodeRoundMeta($record->round);
+            $status = $record->is_finished ? 'finished' : ($record->is_live ? 'live' : 'scheduled');
+
+            $updateRow = null;
+            if (Schema::hasTable('live_match_updates')) {
+                $updateRow = DB::table('live_match_updates')
+                    ->where('match_id', (int) $id)
+                    ->orderByDesc('update_time')
+                    ->first();
+            }
+
+            $events = [];
+            if ($updateRow && !empty($updateRow->events)) {
+                $decoded = json_decode((string) $updateRow->events, true);
+                if (is_array($decoded)) {
+                    $events = $decoded;
+                }
+            }
+
             $match = [
-                'id' => $id,
-                'league' => 'Super Lig',
-                'home_team' => 'Galatasaray',
-                'away_team' => 'Fenerbahce',
-                'home_logo' => 'https://via.placeholder.com/100',
-                'away_logo' => 'https://via.placeholder.com/100',
-                'home_score' => 2,
-                'away_score' => 1,
-                'minute' => 67,
-                'status' => 'live',
-                'stadium' => 'Turk Telekom Stadium',
-                'referee' => 'Halil Umut Meler',
-                'attendance' => 52000,
-                'events' => [
-                    ['minute' => 15, 'type' => 'goal', 'team' => 'home', 'player' => 'Icardi'],
-                    ['minute' => 34, 'type' => 'yellow_card', 'team' => 'away', 'player' => 'Valencia'],
-                    ['minute' => 45, 'type' => 'goal', 'team' => 'away', 'player' => 'Dzeko'],
-                    ['minute' => 62, 'type' => 'goal', 'team' => 'home', 'player' => 'Zaha'],
-                ],
-                'scouts_watching' => 5,
-                'players_tagged' => 8,
+                'id' => (int) $record->id,
+                'title' => $record->title,
+                'league' => $record->league,
+                'home_team' => $record->home_team,
+                'away_team' => $record->away_team,
+                'home_score' => $updateRow->home_score ?? $record->home_score,
+                'away_score' => $updateRow->away_score ?? $record->away_score,
+                'minute' => $updateRow->current_minute ?? null,
+                'status' => $updateRow->status ?? $status,
+                'match_date' => optional($record->match_date)->toIso8601String(),
+                'events' => $events,
+                'stadium' => $meta['location'] ?? null,
+                'sport' => $meta['sport'] ?? null,
+                'focus' => $meta['focus'] ?? null,
+                'stream_url' => $meta['stream_url'] ?? null,
+                'stream_links' => is_array($meta['stream_links'] ?? null) ? $meta['stream_links'] : [],
+                'scout_name' => $meta['scout_name'] ?? null,
+                'note' => $meta['note'] ?? null,
+                'updated_at' => $updateRow->update_time ?? optional($record->updated_at)->toIso8601String(),
             ];
 
             return response()->json([
                 'success' => true,
                 'match' => $match,
             ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mac bulunamadi',
+            ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
