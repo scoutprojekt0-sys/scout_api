@@ -18,14 +18,22 @@ Route::get('/', function() {
         return response()->file($indexPath);
     }
 
-    // Fallback to blade view
+    // Fallback to blade views for CI / minimal installs
     $stats = [
         'scouts' => '15K',
         'videos' => '50K',
         'transfers' => '1,234',
         'satisfaction' => '92'
     ];
-    return view('index', ['stats' => $stats]);
+    if (view()->exists('index')) {
+        return view('index', ['stats' => $stats]);
+    }
+
+    if (view()->exists('welcome')) {
+        return view('welcome');
+    }
+
+    return response('OK', 200);
 })->name('home');
 
 // Live Matches sayfası
