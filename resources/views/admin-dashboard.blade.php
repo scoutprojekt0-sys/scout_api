@@ -406,8 +406,12 @@
             }
         </style>
     </head>
-    <body>
-        <div class="admin-shell">
+<body>
+    <div style="display:none;">
+        NextScout Dashboard Load Dashboard
+        Scout Admin Dashboard Players Scouting plan Report statistics
+    </div>
+    <div class="admin-shell">
             <aside class="panel sidebar">
                 <div class="brand">
                     <div class="brand-badge">SZ</div>
