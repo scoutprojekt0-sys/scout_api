@@ -101,6 +101,9 @@ Route::get('/matches/{matchId}/scorers', [LiveMatchController::class, 'matchScor
 // ========== ANASAYFA - 11 BUTTON YAPISI (Admin Paneli AYRI!) ==========
 Route::get('/homepage/complete', [HomepageController::class, 'getHomepageButtons']);
 Route::get('/homepage/button/{buttonId}', [HomepageController::class, 'getButtonDetails']);
+Route::get('/community-events', [CommunityEventController::class, 'index']);
+Route::get('/community-events/{id}', [CommunityEventController::class, 'show']);
+Route::get('/amateur/standings', [LeagueController::class, 'amateurStandings']);
 
 Route::middleware('auth:sanctum')->group(function () {
     // ========== AUTHENTICATED HOME (Sidebar + Partial) ==========
@@ -257,10 +260,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/video-portfolio/featured', [VideoPortfolioController::class, 'featured']);
 
     // Topluluk Etkinlikleri
-    Route::get('/community-events', [CommunityEventController::class, 'index']);
     Route::post('/community-events', [CommunityEventController::class, 'store']);
     Route::get('/community-events/my-events', [CommunityEventController::class, 'myEvents']);
-    Route::get('/community-events/{id}', [CommunityEventController::class, 'show']);
     Route::post('/community-events/{id}/register', [CommunityEventController::class, 'register']);
 
     // ========== MULTI-SPORT ÖZELLİKLERİ ==========
@@ -445,6 +446,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Logs
         Route::get('/admin/logs', [AdminPanelController::class, 'getAdminLogs']);
+        Route::get('/admin/trial-events', [CommunityEventController::class, 'adminTrialQueue']);
+        Route::post('/admin/trial-events/{id}/moderate', [CommunityEventController::class, 'adminModerateTrial']);
     });
 });
 
