@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\HealthController;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,7 +45,9 @@ Route::get('/advanced-search', function() {
 
 // Giriş yapanlar için dashboard
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/dashboard', [FrontendController::class, 'showDashboard'])->name('dashboard');
+    Route::get('/dashboard', function () {
+        return view('dashboards.player');
+    })->name('dashboard');
 
     // Role-specific dashboards
     Route::get('/dashboard/player', function() {
