@@ -92,6 +92,7 @@ Route::get('/homepage/tabs/transfermarket', [HomePageTabController::class, 'getT
 
 // ========== CANLI MAÇLAR API ==========
 Route::get('/live-matches', [LiveMatchController::class, 'liveMatches']);
+Route::post('/live-matches', [LiveMatchController::class, 'store']);
 Route::get('/matches/recent', [LiveMatchController::class, 'recentResults']);
 Route::get('/matches/upcoming', [LiveMatchController::class, 'upcomingMatches']);
 Route::get('/matches/{matchId}', [LiveMatchController::class, 'matchDetails']);
