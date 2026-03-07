@@ -45,6 +45,7 @@ use App\Http\Controllers\Api\SportStatsController;
 use App\Http\Controllers\Api\StaffController;
 use App\Http\Controllers\Api\StaffProfileController;
 use App\Http\Controllers\Api\SupportTicketController;
+use App\Http\Controllers\Api\SuccessStoryController;
 use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\TeamStatsController;
 use App\Http\Controllers\Api\TransferController;
@@ -73,6 +74,8 @@ Route::get('/ping', function () {
 });
 
 Route::get('/news/live', [NewsController::class, 'live']);
+Route::get('/contracts/live', [ContractController::class, 'live']);
+Route::get('/success-stories', [SuccessStoryController::class, 'index']);
 Route::get('/users', [AuthController::class, 'users']);
 Route::get('/public/players', [ProfileController::class, 'publicPlayers']);
 Route::get('/public/players/{userId}/profile', [ProfileController::class, 'publicPlayerProfile']);
@@ -515,6 +518,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/discovery/manager-needs', [DiscoveryController::class, 'managerNeeds'])->middleware('throttle:30,1');
     Route::post('/discovery/coach-needs', [DiscoveryController::class, 'coachNeeds'])->middleware('throttle:30,1');
     Route::post('/discovery/boosts', [DiscoveryController::class, 'boosts'])->middleware('throttle:20,1');
+
+    // Success stories
+    Route::post('/success-stories', [SuccessStoryController::class, 'store'])->middleware('throttle:20,1');
 });
 
 // ========== LEGAL SERVICES (HUKUK OFİSİ) ==========
@@ -550,6 +556,9 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/featured/admin', [\App\Http\Controllers\Api\FeaturedController::class, 'adminList']);
     Route::post('/featured/admin', [\App\Http\Controllers\Api\FeaturedController::class, 'adminStore']);
     Route::patch('/featured/admin/{id}/active', [\App\Http\Controllers\Api\FeaturedController::class, 'adminToggleActive']);
+
+    Route::get('/admin/success-stories', [SuccessStoryController::class, 'adminIndex']);
+    Route::patch('/admin/success-stories/{id}/moderate', [SuccessStoryController::class, 'adminModerate']);
 });
 
 // ========== CLUB NEEDS ==========
