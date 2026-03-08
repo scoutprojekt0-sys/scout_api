@@ -38,6 +38,16 @@ PR merges can be blocked even when jobs look green if required status-check name
 - If renaming a job is unavoidable, update ruleset in the same PR.
 - Avoid duplicate checks with ambiguous naming across push/pull_request unless ruleset is aligned.
 
+Current recommended required checks:
+
+- `lint` (from `tests.yml`)
+- `tests` (from `tests.yml`)
+- `smoke` (from `api-smoke.yml`)
+- `analyse` (from `phpstan.yml`)
+- `dependency-audit` (from `security.yml`)
+- `secrets-scan` (from `security.yml`)
+- `analyze` (from `codeql.yml`)
+
 ## RC Workflow Safety Rules
 
 1. Prefer explicit commands over branch-dependent Composer scripts.

@@ -17,9 +17,31 @@ class User extends Authenticatable
         'role',
         'city',
         'phone',
+        'stripe_customer_id',
+        'subscription_status',
+        'subscription_end_date',
     ];
 
     protected $hidden = [
         'password',
     ];
+
+    protected $casts = [
+        'subscription_end_date' => 'datetime',
+    ];
+
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function activeSubscription()
+    {
+        return $this->hasOne(Subscription::class)->active();
+    }
+
+    public function hasActiveSubscription()
+    {
+        return $this->activeSubscription()->exists();
+    }
 }

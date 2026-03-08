@@ -10,6 +10,11 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->call([
+            SubscriptionPlanSeeder::class,
+            DemoDataSeeder::class,
+        ]);
+
         User::query()->firstOrCreate(
             ['email' => 'test@example.com'],
             [
