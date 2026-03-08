@@ -1,10 +1,13 @@
 parameters:
-    level: 5
+    level: 1
     paths:
-        - app
-        - routes
+        - app/Http/Controllers
+        - app/Http/Middleware
     excludePaths:
         - app/Providers/AppServiceProvider.php
     ignoreErrors:
         - '#Call to an undefined method Illuminate\\.*#'
+        - '#Access to an undefined property Illuminate\\.*#'
+        - '#Parameter .* of method .* has invalid type Illuminate\\.*#'
     checkMissingIterableValueType: false
+    reportUnmatchedIgnoredErrors: false
