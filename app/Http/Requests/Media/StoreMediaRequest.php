@@ -8,14 +8,45 @@ class StoreMediaRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return true;
     }
 
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'max:51200', 'mimetypes:image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/x-msvideo,video/webm'],
+            'type' => ['required', 'in:video,image'],
+            'file' => [
+                'required',
+                'file',
+                function ($attribute, $value, $fail) {
+                    $type = $this->input('type');
+                    if ($type === 'video') {
+                        $allowedMimes = ['mp4', 'mov', 'avi', 'wmv'];
+                        $maxSize = 102400; // 100MB
+                    } else {
+                        $allowedMimes = ['jpeg', 'jpg', 'png', 'gif', 'webp'];
+                        $maxSize = 5120; // 5MB
+                    }
+
+                    if (!in_array($value->getClientOriginalExtension(), $allowedMimes)) {
+                        $fail('Geçersiz dosya formatı.');
+                    }
+
+                    if ($value->getSize() > $maxSize * 1024) {
+                        $fail('Dosya boyutu çok büyük.');
+                    }
+                },
+            ],
             'title' => ['nullable', 'string', 'max:160'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'type.required' => 'Medya tipi zorunludur.',
+            'type.in' => 'Medya tipi video veya image olmalıdır.',
+            'file.required' => 'Dosya zorunludur.',
         ];
     }
 }

@@ -8,6 +8,16 @@ use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $email = $this->input('email');
+        if (is_string($email)) {
+            $this->merge([
+                'email' => strtolower(trim($email)),
+            ]);
+        }
+    }
+
     public function authorize(): bool
     {
         return true;

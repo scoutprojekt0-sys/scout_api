@@ -36,8 +36,10 @@ Bu checklist, `scout_api` backend'ini production ortamina cikarmadan once son ko
 ## 4) Runtime
 
 - Queue worker/supervisor aktif
+- `ops/systemd/nextscout-queue.service` veya esdeger supervisor config aktif
 - `php artisan queue:restart` sonrasi worker geri kalkiyor
 - Scheduler aktif (`* * * * * php artisan schedule:run`)
+- `ops/systemd/nextscout-scheduler.service` veya esdeger scheduler worker aktif
 - Log rotasyonu aktif
 
 ## 5) Build ve Cache
@@ -61,6 +63,8 @@ Bu checklist, `scout_api` backend'ini production ortamina cikarmadan once son ko
 - Frontend baglantilari:
   - `player-profile.html` ek paneller veri cekiyor
   - `professional-players.html` compare auth varsa API'den donuyor
+- Frontend smoke:
+  - `scripts/smoke-frontend.sh` veya `scripts/smoke-frontend.ps1` gecti
 
 ## 7) Deploy Sonrasi Dogrulama
 
@@ -75,3 +79,11 @@ Bu checklist, `scout_api` backend'ini production ortamina cikarmadan once son ko
 - Son stabil release tag hazir
 - DB rollback icin policy belli (otomatik rollback yerine restore plani)
 - Bakim modu ac/kapa adimlari net
+
+## 9) Reverse Proxy
+
+- `ops/nginx/nextscout-api.conf` referansina gore:
+  - HTTPS redirect aktif
+  - Security headers aktif
+  - `client_max_body_size` uygulama limitleriyle uyumlu
+  - Rate-limit politikasi aktif

@@ -1,0 +1,18 @@
+[Unit]
+Description=NextScout Queue Worker
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+Restart=always
+RestartSec=5
+WorkingDirectory=/var/www/nextscout/scout_api
+ExecStart=/usr/bin/php artisan queue:work --sleep=1 --tries=3 --max-time=3600
+ExecReload=/usr/bin/php artisan queue:restart
+StandardOutput=append:/var/log/nextscout/queue.log
+StandardError=append:/var/log/nextscout/queue-error.log
+
+[Install]
+WantedBy=multi-user.target
+

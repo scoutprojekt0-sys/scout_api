@@ -1,0 +1,17 @@
+[Unit]
+Description=NextScout Laravel Scheduler Runner
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+Restart=always
+RestartSec=5
+WorkingDirectory=/var/www/nextscout/scout_api
+ExecStart=/usr/bin/php artisan schedule:work
+StandardOutput=append:/var/log/nextscout/scheduler.log
+StandardError=append:/var/log/nextscout/scheduler-error.log
+
+[Install]
+WantedBy=multi-user.target
+

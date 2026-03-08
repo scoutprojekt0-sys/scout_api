@@ -1,0 +1,30 @@
+name: Frontend Smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      FRONTEND_BASE_URL: ${{ secrets.FRONTEND_BASE_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate secret
+        run: |
+          if [ -z "$FRONTEND_BASE_URL" ]; then
+            echo "FRONTEND_BASE_URL secret is required (e.g. https://nextscout.app)"
+            exit 1
+          fi
+
+      - name: Run frontend smoke
+        run: |
+          chmod +x scripts/smoke-frontend.sh
+          ./scripts/smoke-frontend.sh "$FRONTEND_BASE_URL"
+

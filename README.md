@@ -245,6 +245,12 @@ chmod +x scripts/release-prod.sh
 Production preflight list:
 - `PRODUCTION_CHECKLIST.md`
 - `.env.production.example`
+- `SECRETS_POLICY.md`
+- `OBSERVABILITY.md`
+- `ops/nginx/nextscout-api.conf`
+- `ops/systemd/nextscout-queue.service`
+- `ops/systemd/nextscout-scheduler.service`
+- `ops/php/disable-unused-extensions.ini`
 
 ### **Production Smoke Test**
 ```bash
@@ -257,6 +263,16 @@ powershell -ExecutionPolicy Bypass -File .\scripts\smoke-prod.ps1 -BaseUrl https
 GitHub Actions:
 - `.github/workflows/production-smoke.yml`
 - Repository secret: `PROD_API_BASE` (ornek: `https://api.nextscout.app`)
+- `.github/workflows/frontend-smoke.yml`
+- Repository secret: `FRONTEND_BASE_URL` (ornek: `https://nextscout.app`)
+
+### **Frontend Smoke Test**
+```bash
+./scripts/smoke-frontend.sh https://nextscout.app
+```
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\smoke-frontend.ps1 -FrontendBaseUrl https://nextscout.app
+```
 
 ### **Cloud (AWS, Azure, GCP)**
 - Dockerfile included

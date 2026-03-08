@@ -1,0 +1,13 @@
+diff --git a/routes/api.php b/routes/api.php
+index 4aea60be..1fef9a79 100644
+--- a/routes/api.php
++++ b/routes/api.php
+@@ -92,6 +92,7 @@
+ 
+ // ========== CANLI MAÇLAR API ==========
+ Route::get('/live-matches', [LiveMatchController::class, 'liveMatches']);
++Route::post('/live-matches', [LiveMatchController::class, 'store']);
+ Route::get('/matches/recent', [LiveMatchController::class, 'recentResults']);
+ Route::get('/matches/upcoming', [LiveMatchController::class, 'upcomingMatches']);
+ Route::get('/matches/{matchId}', [LiveMatchController::class, 'matchDetails']);
+

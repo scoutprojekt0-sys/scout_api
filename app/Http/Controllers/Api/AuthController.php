@@ -9,8 +9,8 @@ use App\Http\Requests\Auth\UpdateMeRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -18,22 +18,26 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $normalizedEmail = strtolower($data['email']);
 
-        /** @var User $user */
-        $user = DB::transaction(function () use ($data): User {
-            $user = User::create([
-                'name' => $data['name'],
-                'email' => strtolower($data['email']),
-                'password' => Hash::make($data['password']),
-                'role' => $data['role'],
-                'city' => $data['city'] ?? null,
-                'phone' => $data['phone'] ?? null,
+        $emailExists = User::query()
+            ->whereRaw('LOWER(email) = ?', [$normalizedEmail])
+            ->exists();
+
+        if ($emailExists) {
+            throw ValidationException::withMessages([
+                'email' => ['Bu e-posta zaten kullaniliyor.'],
             ]);
+        }
 
-            $this->createRoleProfile($user);
-
-            return $user;
-        });
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $normalizedEmail,
+            'password' => Hash::make($data['password']),
+            'role' => $data['role'],
+            'city' => $data['city'] ?? null,
+            'phone' => $data['phone'] ?? null,
+        ]);
 
         $token = $user->createToken('api-token')->plainTextToken;
 
@@ -45,36 +49,6 @@ class AuthController extends Controller
                 'user' => $user,
             ],
         ], 201);
-    }
-
-    private function createRoleProfile(User $user): void
-    {
-        if ($user->role === 'player') {
-            DB::table('player_profiles')->insert([
-                'user_id' => (int) $user->id,
-                'updated_at' => now(),
-            ]);
-
-            return;
-        }
-
-        if ($user->role === 'team') {
-            DB::table('team_profiles')->insert([
-                'user_id' => (int) $user->id,
-                'team_name' => (string) $user->name,
-                'updated_at' => now(),
-            ]);
-
-            return;
-        }
-
-        if (in_array($user->role, ['manager', 'coach', 'scout'], true)) {
-            DB::table('staff_profiles')->insert([
-                'user_id' => (int) $user->id,
-                'role_type' => $user->role,
-                'updated_at' => now(),
-            ]);
-        }
     }
 
     public function login(LoginRequest $request): JsonResponse
@@ -149,6 +123,42 @@ class AuthController extends Controller
             'ok' => true,
             'message' => 'Profil guncellendi.',
             'data' => $user->fresh(),
+        ]);
+    }
+
+    public function users(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'role' => ['nullable', Rule::in(['player', 'manager', 'coach', 'scout', 'team', 'admin'])],
+            'search' => ['nullable', 'string', 'max:120'],
+            'q' => ['nullable', 'string', 'max:120'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:200'],
+        ]);
+
+        $role = $validated['role'] ?? null;
+        $search = trim((string)($validated['search'] ?? $validated['q'] ?? ''));
+        $perPage = (int)($validated['per_page'] ?? 20);
+
+        $query = User::query()
+            ->select(['id', 'name', 'email', 'role', 'city', 'phone', 'created_at'])
+            ->orderByDesc('created_at');
+
+        if ($role) {
+            $query->where('role', $role);
+        }
+
+        if ($search !== '') {
+            $query->where(function ($inner) use ($search) {
+                $inner->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        }
+
+        $users = $query->paginate($perPage);
+
+        return response()->json([
+            'ok' => true,
+            'data' => $users,
         ]);
     }
 }

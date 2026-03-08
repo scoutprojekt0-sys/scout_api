@@ -3,70 +3,85 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\News;
 use App\Services\ExternalNewsFeedService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class NewsController extends Controller
 {
-    public function __construct(private readonly ExternalNewsFeedService $externalFeed)
+    public function live(Request $request): JsonResponse
     {
-    }
+        try {
+            $trOnly = filter_var($request->query('tr_only', false), FILTER_VALIDATE_BOOL);
 
-    public function live(): JsonResponse
-    {
-        $external = $this->externalFeed->fetch(5);
-        if ($external !== []) {
+            if ($trOnly) {
+                $external = app(ExternalNewsFeedService::class)->fetchTurkey(10);
+
+                return response()->json([
+                    'ok' => true,
+                    'data' => $external,
+                    'source' => 'external_feed_tr_only',
+                ]);
+            }
+
+            $news = News::where('is_published', true)
+                ->orderByDesc('published_at')
+                ->limit(10)
+                ->get();
+
+            if ($news->isEmpty()) {
+                $external = app(ExternalNewsFeedService::class)->fetch(10);
+
+                return response()->json([
+                    'ok' => true,
+                    'data' => $external,
+                    'source' => 'external_feed',
+                ]);
+            }
+
             return response()->json([
                 'ok' => true,
-                'data' => $external,
+                'data' => $news,
+                'source' => 'database',
             ]);
-        }
-
-        $internal = $this->fromOpportunities(5);
-        if ($internal !== []) {
+        } catch (\Exception $e) {
             return response()->json([
-                'ok' => true,
-                'data' => $internal,
-            ]);
+                'ok' => false,
+                'message' => 'Haberler yüklenirken hata oluştu: ' . $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'ok' => true,
-            'data' => [[
-                'id' => 0,
-                'title' => 'Scout aginda yeni transfer firsatlari acildi.',
-                'source' => 'NextScout',
-                'published_at' => now()->toISOString(),
-            ]],
-        ]);
     }
 
-    private function fromOpportunities(int $limit): array
+    public function index(Request $request): JsonResponse
     {
-        $rows = DB::table('opportunities')
-            ->leftJoin('users as teams', 'teams.id', '=', 'opportunities.team_user_id')
-            ->where('opportunities.status', 'open')
-            ->orderByDesc('opportunities.created_at')
-            ->limit($limit)
-            ->get([
-                'opportunities.id',
-                'opportunities.title',
-                'opportunities.created_at as published_at',
-                'teams.name as source',
+        try {
+            $validated = $request->validate([
+                'page' => ['nullable', 'integer', 'min:1'],
+                'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
             ]);
 
-        if ($rows->isEmpty()) {
-            return [];
-        }
+            $perPage = (int) ($validated['per_page'] ?? 20);
 
-        return $rows->map(function ($row) {
-            return [
-                'id' => (int) $row->id,
-                'title' => (string) $row->title,
-                'source' => $row->source ?: 'Kulup',
-                'published_at' => (string) $row->published_at,
-            ];
-        })->values()->all();
+            $news = News::where('is_published', true)
+                ->orderByDesc('published_at')
+                ->paginate($perPage);
+
+            return response()->json([
+                'ok' => true,
+                'data' => $news->items(),
+                'pagination' => [
+                    'total' => $news->total(),
+                    'per_page' => $news->perPage(),
+                    'current_page' => $news->currentPage(),
+                    'last_page' => $news->lastPage(),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Haberler yüklenirken hata oluştu: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

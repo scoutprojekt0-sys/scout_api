@@ -8,15 +8,24 @@ class StoreContactRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return true;
     }
 
     public function rules(): array
     {
         return [
-            'to_user_id' => ['required', 'integer', 'min:1', 'exists:users,id'],
+            'to_user_id' => ['required', 'exists:users,id', 'different:from_user_id'],
             'subject' => ['nullable', 'string', 'max:160'],
-            'message' => ['required', 'string', 'min:1', 'max:5000'],
+            'message' => ['required', 'string', 'max:5000'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'to_user_id.required' => 'Alıcı kullanıcı zorunludur.',
+            'to_user_id.exists' => 'Alıcı kullanıcı bulunamadı.',
+            'message.required' => 'Mesaj içeriği zorunludur.',
         ];
     }
 }

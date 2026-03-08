@@ -1,242 +1,774 @@
 ﻿<!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NextScout | Homepage</title>
-  <style>
-    :root {
-      --bg: #2c2c2c;
-      --panel: #111111;
-      --line: #242424;
-      --text: #f5f5f5;
-      --muted: #a7a7a7;
-      --accent: #ffffff;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextScout - AI-Powered Scout Platform</title>
+    <meta name="description" content="@yield('meta_description', 'Discover hidden talents with AI-powered scouting for football, basketball & volleyball.')">
 
-    * { box-sizing: border-box; }
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%231E40AF'/><text x='50' y='60' font-size='60' font-weight='bold' fill='white' text-anchor='middle' font-family='Arial'>N</text></svg>">
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: radial-gradient(circle at 10% 10%, #2c2c2c 0%, transparent 34%), var(--bg);
-      color: var(--text);
-      font-family: "Segoe UI", Tahoma, sans-serif;
-    }
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 
-    .page {
-      width: min(1100px, 92%);
-      margin: 0 auto;
-      padding: 24px 0 48px;
-    }
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    .topbar {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      border: 1px solid #d6d6d6;
-      border-radius: 14px;
-      background: rgba(44, 44, 44, 0.95);
-      padding: 12px 14px;
-      gap: 14px;
-    }
+    @stack('styles')
 
-    .top-left {
-      display: inline-flex;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    .top-center {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding-left: 18px;
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #1F2937;
+            background-color: #FFFFFF;
+            line-height: 1.6;
+        }
 
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: "Arial Black", "Segoe UI", sans-serif;
-      font-weight: 900;
-      font-size: clamp(1.55rem, 2.2vw, 2.05rem);
-      line-height: 1;
-      letter-spacing: 0.02em;
-      user-select: none;
-    }
-    .brand-next { color: #ffffff; }
-    .brand-scout { color: #df1f36; }
-    .brand-slash {
-      color: #df1f36;
-      font-weight: 900;
-      display: inline-block;
-      width: 24px;
-      text-align: center;
-    }
+        /* Utility Classes */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
 
-    .btn {
-      border: 1px solid #3a3a3a;
-      background: #111111;
-      color: #f5f5f5;
-      text-decoration: none;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      cursor: pointer;
-      font-family: "Arial Black", "Segoe UI", sans-serif;
-      letter-spacing: 0.02em;
-    }
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 16px;
+        }
 
-    .btn-primary {
-      background: #f5f5f5;
-      color: #0a0a0a;
-      border-color: #f5f5f5;
-    }
+        .btn-primary {
+            background: linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%);
+            color: white;
+        }
 
-    .live-btn {
-      margin-left: 2px;
-      padding: 4px 8px;
-      font-size: 0.7rem;
-      border-radius: 5px;
-      background: #df1f36;
-      color: #ffffff;
-      border-color: #df1f36;
-      flex: 0 0 auto;
-      font-weight: 800;
-    }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1E3A8A 0%, #172554 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(30, 64, 175, 0.2);
+        }
 
-    .search-box {
-      margin-left: 0;
-      width: 320px;
-      height: 30px;
-      border-radius: 6px;
-      border: 1px solid #d9d9d9;
-      background: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 8px 0 10px;
-    }
+        .btn-secondary {
+            background: white;
+            color: #1E40AF;
+            border: 2px solid #1E40AF;
+        }
 
-    .search-box input {
-      border: 0;
-      outline: 0;
-      width: 100%;
-      font-size: 0.82rem;
-      color: #303030;
-      background: transparent;
-      font-family: "Arial Black", "Segoe UI", sans-serif;
-      letter-spacing: 0.01em;
-    }
+        .btn-secondary:hover {
+            background: #F0F9FF;
+            transform: translateY(-2px);
+        }
 
-    .search-box input::placeholder {
-      color: #8a8a8a;
-    }
+        .text-center {
+            text-align: center;
+        }
 
-    .search-icon {
-      color: #505050;
-      font-size: 0.95rem;
-      line-height: 1;
-      margin-left: 6px;
-    }
+        .section-title {
+            font-size: 42px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            color: #0F172A;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
 
-    .member-btn {
-      margin-left: 0;
-      padding: 4px 9px;
-      font-size: 0.7rem;
-      border-radius: 5px;
-      background: #df1f36;
-      color: #ffffff;
-      border-color: #df1f36;
-      flex: 0 0 auto;
-      font-weight: 800;
-    }
+        .section-subtitle {
+            font-size: 20px;
+            color: #6B7280;
+            margin-bottom: 40px;
+            max-width: 700px;
+        }
 
-    .hero {
-      margin-top: 18px;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: linear-gradient(165deg, #111111, #0a0a0a);
-      padding: 28px;
-    }
+        /* ========== HEADER/NAVIGATION ========== */
+        header {
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
 
-    .hero h1 {
-      margin: 0 0 10px;
-      font-size: clamp(2rem, 4.8vw, 3rem);
-      line-height: 1.05;
-      max-width: 14ch;
-    }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+        }
 
-    .hero p {
-      margin: 0;
-      color: var(--muted);
-      max-width: 58ch;
-      line-height: 1.5;
-    }
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1E40AF;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
 
-    .hero-actions {
-      margin-top: 18px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+        .logo i {
+            font-size: 32px;
+        }
 
-    .note {
-      margin-top: 10px;
-      font-size: 0.82rem;
-      color: #8f8f8f;
-    }
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+            align-items: center;
+        }
 
-    @media (max-width: 720px) {
-      .topbar {
-        grid-template-columns: 1fr;
-      }
-      .top-center {
-        order: 2;
-        justify-content: flex-start;
-      }
-      .member-btn { order: 3; }
-      .btn { flex: 1; text-align: center; }
-      .search-box { width: 100%; }
-      .hero { padding: 20px; }
-    }
-  </style>
+        .nav-links a {
+            text-decoration: none;
+            color: #1F2937;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #1E40AF;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+        }
+
+        /* ========== HERO SECTION ========== */
+        .hero {
+            background: linear-gradient(135deg, #0F172A 0%, #1E40AF 100%);
+            color: white;
+            padding: 100px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(30, 64, 175, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-text h1 {
+            font-size: 54px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+
+        .hero-text p {
+            font-size: 20px;
+            margin-bottom: 30px;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 50px;
+            padding-top: 50px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .stat-item {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            font-size: 28px;
+            opacity: 0.8;
+        }
+
+        .stat-content h4 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-content p {
+            opacity: 0.8;
+            font-size: 14px;
+        }
+
+        .hero-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .hero-visual::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(30, 64, 175, 0.2));
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-30px); }
+        }
+
+        .hero-box {
+            position: relative;
+            z-index: 1;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.2);
+            text-align: center;
+        }
+
+        .hero-box i {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .hero-box h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                padding: 60px 0;
+            }
+
+            .hero-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .hero-text h1 {
+                font-size: 36px;
+            }
+
+            .hero-text p {
+                font-size: 18px;
+            }
+
+            .hero-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ========== FEATURES SECTION ========== */
+        .features {
+            padding: 100px 0;
+            background: #F9FAFB;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            border-left: 4px solid #1E40AF;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(30, 64, 175, 0.15);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #1E40AF, #3B82F6);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #0F172A;
+        }
+
+        .feature-card p {
+            color: #6B7280;
+            line-height: 1.6;
+        }
+
+        /* ========== STATS SECTION ========== */
+        .stats {
+            padding: 80px 0;
+            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 60px;
+            margin-top: 60px;
+        }
+
+        .stats-item h2 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .stats-item p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        /* ========== CTA SECTION ========== */
+        .cta {
+            padding: 100px 0;
+            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .cta h2 {
+            font-size: 48px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .cta p {
+            font-size: 20px;
+            margin-bottom: 40px;
+            opacity: 0.95;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ========== FOOTER ========== */
+        footer {
+            background: #0F172A;
+            color: #D1D5DB;
+            padding: 60px 0 20px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .footer-section a {
+            display: block;
+            color: #D1D5DB;
+            text-decoration: none;
+            margin-bottom: 12px;
+            transition: color 0.3s;
+            font-size: 14px;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .social-links a {
+            color: #D1D5DB;
+            font-size: 20px;
+            transition: color 0.3s;
+        }
+
+        .social-links a:hover {
+            color: #3B82F6;
+        }
+
+        /* ========== ANIMATIONS ========== */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: slideInUp 0.6s ease-out forwards;
+        }
+
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 32px;
+            }
+
+            .section-subtitle {
+                font-size: 16px;
+            }
+
+            .cta h2 {
+                font-size: 32px;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="page">
-    <header class="topbar">
-      <div class="top-left">
-        <div class="brand">
-          <span class="brand-slash">//</span>
-          <span class="brand-next">NEXT</span><span class="brand-scout">SCOUT</span>
-          <span class="brand-slash">//</span>
+    <!-- ========== HEADER ========== -->
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">
+                    <i class="fas fa-search"></i>
+                    NextScout
+                </a>
+                <ul class="nav-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#how">How it Works</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
+                </ul>
+                <div class="nav-buttons">
+                    @auth
+                        <a href="/dashboard" class="btn btn-primary">Dashboard</a>
+                    @else
+                        <a href="/login" class="btn btn-secondary">Login</a>
+                        <a href="/register" class="btn btn-primary">Sign Up</a>
+                    @endauth
+                </div>
+            </nav>
         </div>
-        <a class="btn live-btn" href="/live-scores">Canli</a>
-      </div>
-      <div class="top-center">
-        <label class="search-box" aria-label="Arama">
-          <input type="search" placeholder="Arama" />
-          <span class="search-icon">⌕</span>
-        </label>
-      </div>
-      <a class="btn member-btn" href="/login">Uye Girisi</a>
     </header>
 
+    <!-- ========== HERO SECTION ========== -->
     <section class="hero">
-      <h1>Oyuncular icin resmi ana sayfa</h1>
-      <p>
-        Burasi admin paneli degil. Oyuncu kayit ve giris akisi bu sayfadan ilerleyecek.
-        Bir sonraki adimda butonlari senin istedigin gercek sayfalara baglayacagiz.
-      </p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="#">Hemen Kaydol</a>
-        <a class="btn" href="/login">Zaten Uyeliyim</a>
-      </div>
-      <div class="note">Admin paneli ayridir ve bu sayfadan acilmaz.</div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>🎯 Discover Hidden Talents, Transform Careers</h1>
+                    <p>AI-powered scouting platform trusted by 15,000+ scouts worldwide. Uncover the next generation of football, basketball & volleyball stars.</p>
+
+                    <div class="hero-cta">
+                        @auth
+                            <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+                        @else
+                            <a href="/register" class="btn btn-primary">Start Free Trial</a>
+                            <a href="#" class="btn btn-secondary">Watch Demo</a>
+                        @endauth
+                    </div>
+
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <div class="stat-icon">⚽</div>
+                            <div class="stat-content">
+                                <h4>270+</h4>
+                                <p>API Endpoints</p>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-content">
+                                <h4>{{ $stats['active_scouts'] ?? '15K' }}+</h4>
+                                <p>Active Scouts</p>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">🎬</div>
+                            <div class="stat-content">
+                                <h4>{{ $stats['videos'] ?? '50K' }}+</h4>
+                                <p>Player Videos</p>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">🏆</div>
+                            <div class="stat-content">
+                                <h4>{{ $stats['transfers'] ?? '1,234' }}</h4>
+                                <p>Transfers Closed</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-visual">
+                    <div class="hero-box">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Live Scouting</h3>
+                        <p>Real-time player tracking & analytics</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
-  </div>
+
+    <!-- ========== FEATURES SECTION ========== -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title text-center">⚡ Powerful Features for Every Scout</h2>
+            <p class="section-subtitle text-center">Everything you need to discover talent and close deals faster</p>
+
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>🤖 AI Scout Assistant</h3>
+                    <p>Auto-analyze videos, predict player potential, and get AI-powered recommendations in seconds.</p>
+                </div>
+
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <h3>📹 Video Scouting Hub</h3>
+                    <p>Upload, organize, and share highlight reels. Create professional scout reports with video annotations.</p>
+                </div>
+
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <h3>💰 Transfer Management</h3>
+                    <p>Track market values, manage offers, and close transfers digitally with full contract management.</p>
+                </div>
+
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3>📊 Advanced Analytics</h3>
+                    <p>Deep dive into player statistics, performance metrics, and market trends with professional-grade dashboards.</p>
+                </div>
+
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h3>🎮 Gamified Marketplace</h3>
+                    <p>Earn points by scouting, earn achievements & badges. Compete on leaderboards and get rewarded.</p>
+                </div>
+
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h3>🌍 Multi-Sport Support</h3>
+                    <p>Football, Basketball & Volleyball. One platform, unlimited sports. Discover talent across disciplines.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== STATS SECTION ========== -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stats-item">
+                    <h2>{{ $stats['active_scouts'] ?? '15K' }}+</h2>
+                    <p>Active Scouts & Agents</p>
+                </div>
+                <div class="stats-item">
+                    <h2>{{ $stats['videos'] ?? '50K' }}+</h2>
+                    <p>Player Videos Analyzed</p>
+                </div>
+                <div class="stats-item">
+                    <h2>{{ $stats['transfers'] ?? '1,234' }}</h2>
+                    <p>Successful Transfers</p>
+                </div>
+                <div class="stats-item">
+                    <h2>92%</h2>
+                    <p>User Satisfaction Rate</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== CTA SECTION ========== -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Discover the Next Star?</h2>
+            <p>Join 15,000+ scouts and managers already discovering top talent on NextScout</p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                @auth
+                    <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+                @else
+                    <a href="/register" class="btn btn-primary">Start Free Trial - No Credit Card</a>
+                    <a href="#" class="btn btn-secondary" style="background: white; color: #1E40AF;">Schedule Demo</a>
+                @endauth
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== FOOTER ========== -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>NextScout</h3>
+                    <p style="margin-bottom: 20px;">AI-powered scouting for football, basketball & volleyball.</p>
+                    <div class="social-links">
+                        <a href="https://twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+                        <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+                        <a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Product</h3>
+                    <a href="#features">Features</a>
+                    <a href="/pricing">Pricing</a>
+                    <a href="/security">Security</a>
+                    <a href="/roadmap">Roadmap</a>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Company</h3>
+                    <a href="/about">About</a>
+                    <a href="/blog">Blog</a>
+                    <a href="/careers">Careers</a>
+                    <a href="/contact">Contact</a>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Legal</h3>
+                    <a href="/privacy">Privacy Policy</a>
+                    <a href="/terms">Terms of Service</a>
+                    <a href="/cookies">Cookie Policy</a>
+                    <a href="/gdpr">GDPR</a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 NextScout. All rights reserved. Discover talent. Change careers. Transform football.</p>
+                <p>Made with ❤️ for scouts worldwide</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Sticky header shadow
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('header');
+            if (window.scrollY > 10) {
+                header.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+            } else {
+                header.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+            }
+        });
+
+        // Animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+
+    @stack('scripts')
 </body>
 </html>

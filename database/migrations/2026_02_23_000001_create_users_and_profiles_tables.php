@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->string('name', 120);
             $table->string('email', 190)->unique();
             $table->string('password');
-            $table->enum('role', ['player', 'manager', 'coach', 'scout', 'team']);
+            $table->enum('role', ['player', 'manager', 'coach', 'scout', 'team', 'admin']);
             $table->string('city', 80)->nullable();
             $table->string('phone', 30)->nullable();
             $table->timestamps();

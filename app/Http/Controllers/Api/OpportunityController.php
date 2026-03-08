@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Opportunity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,50 +27,35 @@ class OpportunityController extends Controller
 
         $perPage = (int) ($validated['per_page'] ?? 20);
 
-        $query = DB::table('opportunities')
-            ->leftJoin('users as teams', 'teams.id', '=', 'opportunities.team_user_id')
-            ->select([
-                'opportunities.id',
-                'opportunities.team_user_id',
-                'teams.name as team_name',
-                'teams.city as team_city',
-                'opportunities.title',
-                'opportunities.position',
-                'opportunities.age_min',
-                'opportunities.age_max',
-                'opportunities.city',
-                'opportunities.details',
-                'opportunities.status',
-                'opportunities.created_at',
-                'opportunities.updated_at',
-            ]);
+        // Eager loading ile team bilgilerini al
+        $query = Opportunity::query()->with(['team']);
 
         if (!empty($validated['status'])) {
-            $query->where('opportunities.status', $validated['status']);
+            $query->where('status', $validated['status']);
         }
 
         if (!empty($validated['position'])) {
-            $query->where('opportunities.position', 'like', '%' . $validated['position'] . '%');
+            $query->where('position', 'like', '%' . $validated['position'] . '%');
         }
 
         if (!empty($validated['city'])) {
-            $query->where('opportunities.city', 'like', '%' . $validated['city'] . '%');
+            $query->where('city', 'like', '%' . $validated['city'] . '%');
         }
 
         if (!empty($validated['team_user_id'])) {
-            $query->where('opportunities.team_user_id', (int) $validated['team_user_id']);
+            $query->where('team_user_id', (int) $validated['team_user_id']);
         }
 
         if (!empty($validated['age_min'])) {
-            $query->where('opportunities.age_min', '>=', (int) $validated['age_min']);
+            $query->where('age_min', '>=', (int) $validated['age_min']);
         }
 
         if (!empty($validated['age_max'])) {
-            $query->where('opportunities.age_max', '<=', (int) $validated['age_max']);
+            $query->where('age_max', '<=', (int) $validated['age_max']);
         }
 
         $opportunities = $query
-            ->orderByDesc('opportunities.created_at')
+            ->latest()
             ->paginate($perPage);
 
         return response()->json([

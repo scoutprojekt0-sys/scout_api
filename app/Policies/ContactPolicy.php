@@ -7,23 +7,18 @@ use App\Models\User;
 
 class ContactPolicy
 {
-    public function create(User $user, int $toUserId): bool
+    public function view(User $user, Contact $contact): bool
     {
-        return (int) $user->id !== $toUserId;
+        return $user->id === $contact->from_user_id || $user->id === $contact->to_user_id;
     }
 
-    public function viewInbox(User $user): bool
+    public function create(User $user): bool
     {
-        return $user->id > 0;
+        return true;
     }
 
-    public function viewSent(User $user): bool
+    public function updateStatus(User $user, Contact $contact): bool
     {
-        return $user->id > 0;
-    }
-
-    public function changeStatus(User $user, Contact $contact): bool
-    {
-        return (int) $contact->to_user_id === (int) $user->id;
+        return $user->id === $contact->to_user_id;
     }
 }
