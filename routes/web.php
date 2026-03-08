@@ -77,12 +77,12 @@ Route::view('/live-scores', 'live-scores');
 Route::view('/admin', 'admin-dashboard');
 // Admin dashboard (public for current onboarding flow)
 Route::get('/dashboard/admin', function() {
-    return view('dashboards.admin');
+    return view('admin-dashboard');
 })->name('dashboard.admin');
 
 // Admin dashboard - Public access for testing (remove auth for demo)
 Route::get('/admin', function() {
-    return view('dashboards.admin');
+    return view('admin-dashboard');
 })->name('admin.dashboard');
 
 // Simple test route

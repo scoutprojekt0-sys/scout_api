@@ -44,6 +44,7 @@ use App\Http\Controllers\Api\SportsController;
 use App\Http\Controllers\Api\SportStatsController;
 use App\Http\Controllers\Api\StaffController;
 use App\Http\Controllers\Api\StaffProfileController;
+use App\Http\Controllers\Api\SiteContentController;
 use App\Http\Controllers\Api\SupportTicketController;
 use App\Http\Controllers\Api\SuccessStoryController;
 use App\Http\Controllers\Api\TeamController;
@@ -52,6 +53,8 @@ use App\Http\Controllers\Api\TeamStatsController;
 use App\Http\Controllers\Api\TransferController;
 use App\Http\Controllers\Api\TrialRequestController;
 use App\Http\Controllers\Api\VideoPortfolioController;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
@@ -73,6 +76,45 @@ Route::get('/ping', function () {
         'message' => 'API is reachable',
         'timestamp' => now()->toIso8601String(),
     ]);
+});
+
+// Extended health check for monitoring probes.
+Route::get('/health', function () {
+    $checks = [
+        'app' => true,
+        'db' => false,
+        'cache' => false,
+    ];
+    $details = [];
+    $status = 200;
+
+    try {
+        DB::select('SELECT 1');
+        $checks['db'] = true;
+    } catch (\Throwable $e) {
+        $details['db_error'] = $e->getMessage();
+        $status = 503;
+    }
+
+    try {
+        $probeKey = 'health_probe_' . now()->timestamp;
+        Cache::put($probeKey, 'ok', 5);
+        $checks['cache'] = Cache::get($probeKey) === 'ok';
+        if (!$checks['cache']) {
+            $status = 503;
+        }
+    } catch (\Throwable $e) {
+        $details['cache_error'] = $e->getMessage();
+        $status = 503;
+    }
+
+    return response()->json([
+        'ok' => $status === 200,
+        'checks' => $checks,
+        'details' => $details,
+        'timestamp' => now()->toIso8601String(),
+        'env' => app()->environment(),
+    ], $status);
 });
 
 Route::get('/news/live', [NewsController::class, 'live']);
@@ -174,6 +216,8 @@ Route::get('/homepage/button/{buttonId}', [HomepageController::class, 'getButton
 Route::get('/community-events', [CommunityEventController::class, 'index']);
 Route::get('/community-events/{id}', [CommunityEventController::class, 'show']);
 Route::get('/amateur/standings', [LeagueController::class, 'amateurStandings']);
+Route::get('/public/footer-pages', [SiteContentController::class, 'footerPages']);
+Route::post('/public/contact-messages', [SiteContentController::class, 'storeContactMessage'])->middleware('throttle:30,1');
 
 Route::middleware('auth:sanctum')->group(function () {
     // ========== AUTHENTICATED HOME (Sidebar + Partial) ==========
@@ -518,6 +562,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/admin/logs', [AdminPanelController::class, 'getAdminLogs']);
         Route::get('/admin/trial-events', [CommunityEventController::class, 'adminTrialQueue']);
         Route::post('/admin/trial-events/{id}/moderate', [CommunityEventController::class, 'adminModerateTrial']);
+        Route::get('/admin/contact-messages', [SiteContentController::class, 'adminContactMessages']);
     });
 });
 

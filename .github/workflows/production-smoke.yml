@@ -1,0 +1,30 @@
+name: Production Smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      PROD_API_BASE: ${{ secrets.PROD_API_BASE }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate secret
+        run: |
+          if [ -z "$PROD_API_BASE" ]; then
+            echo "PROD_API_BASE secret is required (e.g. https://api.nextscout.app)"
+            exit 1
+          fi
+
+      - name: Run production smoke
+        run: |
+          chmod +x scripts/smoke-prod.sh
+          ./scripts/smoke-prod.sh "$PROD_API_BASE"
+

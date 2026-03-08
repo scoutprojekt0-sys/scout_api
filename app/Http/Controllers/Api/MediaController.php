@@ -37,13 +37,17 @@ class MediaController extends Controller
 
     public function indexByUser(int $id): JsonResponse
     {
+        $perPage = (int) request()->query('per_page', 20);
+        $perPage = max(1, min($perPage, 100));
+
         $media = Media::query()
             ->where('user_id', $id)
             ->orderByDesc('created_at')
-            ->paginate(20);
+            ->paginate($perPage);
 
         return response()->json([
             'ok' => true,
+            'message' => 'Media listesi getirildi.',
             'data' => $media,
         ]);
     }

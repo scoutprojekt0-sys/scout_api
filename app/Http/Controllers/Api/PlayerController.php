@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\CacheService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,27 +27,29 @@ class PlayerController extends Controller
         $currentYear = (int) now()->format('Y');
         $perPage = (int) ($validated['per_page'] ?? 20);
 
-        $query = DB::table('users')
-            ->join('player_profiles', 'player_profiles.user_id', '=', 'users.id')
-            ->where('users.role', 'player')
-            ->select([
-                'users.id',
-                'users.name',
-                'users.email',
-                'users.city',
-                'users.phone',
-                'player_profiles.birth_year',
-                'player_profiles.position',
-                'player_profiles.dominant_foot',
-                'player_profiles.height_cm',
-                'player_profiles.weight_kg',
-                'player_profiles.current_team',
-                'player_profiles.bio',
-            ]);
+        // Eager loading ile N+1 query problemini çöz
+        $query = User::query()
+            ->where('role', 'player')
+            ->with(['playerProfile', 'media' => function($q) {
+                $q->latest()->limit(3);
+            }]);
 
-        if (!empty($validated['position'])) {
-            $query->where('player_profiles.position', 'like', '%' . $validated['position'] . '%');
-        }
+        // Filtreleme
+        $query->whereHas('playerProfile', function($q) use ($validated, $currentYear) {
+            if (!empty($validated['position'])) {
+                $q->where('position', 'like', '%' . $validated['position'] . '%');
+            }
+
+            if (!empty($validated['age_min'])) {
+                $maxBirthYear = $currentYear - $validated['age_min'];
+                $q->where('birth_year', '<=', $maxBirthYear);
+            }
+
+            if (!empty($validated['age_max'])) {
+                $minBirthYear = $currentYear - $validated['age_max'];
+                $q->where('birth_year', '>=', $minBirthYear);
+            }
+        });
 
         if (!empty($validated['city'])) {
             $query->where('users.city', 'like', '%' . $validated['city'] . '%');
@@ -64,6 +68,17 @@ class PlayerController extends Controller
         $players = $query
             ->orderByDesc('users.created_at')
             ->paginate($perPage);
+
+        // API uyumlulugu icin kritik profil alanlarini ust seviyede expose et.
+        $players->setCollection(
+            $players->getCollection()->map(function (User $player) {
+                $profile = $player->playerProfile;
+                $player->position = $profile?->position;
+                $player->birth_year = $profile?->birth_year;
+                $player->current_team = $profile?->current_team;
+                return $player;
+            })
+        );
 
         return response()->json([
             'ok' => true,
