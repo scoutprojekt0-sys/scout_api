@@ -18,6 +18,16 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(RequestMetricsLogger::class);
 
+        // API rate limiting
+        $middleware->api(prepend: [
+            \Illuminate\Routing\Middleware\ThrottleRequests::class.':'.env('RATE_LIMIT_API', 60).',1',
+        ]);
+
+        // Apply input sanitization to all API routes
+        $middleware->api(append: [
+            \App\Http\Middleware\SanitizeInput::class,
+        ]);
+
         $middleware->alias([
             'abilities' => CheckAbilities::class,
             'ability' => CheckForAnyAbility::class,
