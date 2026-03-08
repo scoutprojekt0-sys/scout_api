@@ -48,7 +48,6 @@ use App\Http\Controllers\Api\SiteContentController;
 use App\Http\Controllers\Api\SupportTicketController;
 use App\Http\Controllers\Api\SuccessStoryController;
 use App\Http\Controllers\Api\TeamController;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\TeamStatsController;
 use App\Http\Controllers\Api\TransferController;
 use App\Http\Controllers\Api\TrialRequestController;

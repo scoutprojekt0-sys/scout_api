@@ -6,9 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\UpdateMeRequest;
+use App\Models\PlayerProfile;
+use App\Models\StaffProfile;
+use App\Models\TeamProfile;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -30,14 +34,20 @@ class AuthController extends Controller
             ]);
         }
 
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $normalizedEmail,
-            'password' => Hash::make($data['password']),
-            'role' => $data['role'],
-            'city' => $data['city'] ?? null,
-            'phone' => $data['phone'] ?? null,
-        ]);
+        $user = DB::transaction(function () use ($data, $normalizedEmail): User {
+            $createdUser = User::create([
+                'name' => $data['name'],
+                'email' => $normalizedEmail,
+                'password' => Hash::make($data['password']),
+                'role' => $data['role'],
+                'city' => $data['city'] ?? null,
+                'phone' => $data['phone'] ?? null,
+            ]);
+
+            $this->createDefaultProfileForRole($createdUser);
+
+            return $createdUser;
+        });
 
         $token = $user->createToken('api-token')->plainTextToken;
 
@@ -160,5 +170,28 @@ class AuthController extends Controller
             'ok' => true,
             'data' => $users,
         ]);
+    }
+
+    private function createDefaultProfileForRole(User $user): void
+    {
+        if ($user->role === 'player') {
+            PlayerProfile::firstOrCreate(['user_id' => $user->id]);
+            return;
+        }
+
+        if ($user->role === 'team') {
+            TeamProfile::firstOrCreate(
+                ['user_id' => $user->id],
+                ['team_name' => $user->name]
+            );
+            return;
+        }
+
+        if (in_array($user->role, ['manager', 'coach', 'scout'], true)) {
+            StaffProfile::firstOrCreate(
+                ['user_id' => $user->id],
+                ['role_type' => $user->role]
+            );
+        }
     }
 }

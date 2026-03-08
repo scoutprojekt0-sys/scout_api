@@ -35,12 +35,4 @@ class RegisterRequest extends FormRequest
         ];
     }
 
-    protected function prepareForValidation(): void
-    {
-        if ($this->has('email')) {
-            $this->merge([
-                'email' => strtolower((string) $this->input('email')),
-            ]);
-        }
-    }
 }
