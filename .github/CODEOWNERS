@@ -1,0 +1,24 @@
+* @scoutprojekt0-sys/backend-team
+
+# Critical API routes and controllers
+/routes/api.php @scoutprojekt0-sys/backend-team
+/app/Http/Controllers/Api/ @scoutprojekt0-sys/backend-team
+
+# Authentication and security
+/app/Http/Controllers/Api/AuthController.php @scoutprojekt0-sys/backend-team @scoutprojekt0-sys/security-reviewers
+/app/Http/Controllers/Api/BillingController.php @scoutprojekt0-sys/backend-team @scoutprojekt0-sys/security-reviewers
+/app/Http/Middleware/ @scoutprojekt0-sys/backend-team
+
+# CI/CD workflows
+/.github/workflows/ @scoutprojekt0-sys/devops-team
+
+# Database migrations
+/database/migrations/ @scoutprojekt0-sys/backend-team
+
+# Configuration
+/config/ @scoutprojekt0-sys/backend-team
+/.env.example @scoutprojekt0-sys/backend-team
+
+# Documentation
+/docs/ @scoutprojekt0-sys/backend-team
+README.md @scoutprojekt0-sys/backend-team

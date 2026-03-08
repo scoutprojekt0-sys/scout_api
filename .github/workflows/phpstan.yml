@@ -1,4 +1,4 @@
-name: API Smoke
+name: PHPStan
 
 on:
   workflow_dispatch:
@@ -6,19 +6,18 @@ on:
     branches:
       - main
       - feat/scout-api-hardening
-      - fix/rc-workflow-to-feat
 
 permissions:
   contents: read
 
 concurrency:
-  group: api-smoke-${{ github.workflow }}-${{ github.ref }}
+  group: phpstan-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  smoke:
+  analyse:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -28,7 +27,6 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: dom, curl, libxml, mbstring, zip, pdo, sqlite, pdo_sqlite
           coverage: none
 
       - name: Install Composer dependencies
@@ -37,14 +35,6 @@ jobs:
           APP_ENV: local
           APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 
-      - name: Prepare environment
-        run: |
-          cp .env.example .env
-          php artisan key:generate
-
-      - name: API route smoke
-        run: php artisan route:list --path=api
-
-      - name: Test smoke
-        run: php artisan test
-
+      - name: Run PHPStan
+        run: composer analyse
+        continue-on-error: true

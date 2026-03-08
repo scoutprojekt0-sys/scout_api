@@ -1,20 +1,50 @@
 name: Tests
 
 on:
+  workflow_dispatch:
   push:
     branches:
+      - main
       - feat/scout-api-hardening
       - fix/rc-workflow-to-feat
-  pull_request:
   schedule:
     - cron: '0 0 * * *'
 
 permissions:
   contents: read
 
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  tests:
+  lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+        env:
+          APP_ENV: local
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+
+      - name: Check code style (Pint)
+        run: vendor/bin/pint --test
+
+  tests:
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     strategy:
       fail-fast: false

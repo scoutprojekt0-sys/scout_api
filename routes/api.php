@@ -2,12 +2,15 @@
 
 use App\Http\Controllers\Api\ApplicationController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\DiscoveryController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\OpportunityController;
 use App\Http\Controllers\Api\PlayerController;
 use App\Http\Controllers\Api\StaffController;
+use App\Http\Controllers\Api\SystemController;
 use App\Http\Controllers\Api\TeamController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +26,19 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::get('/news/live', [NewsController::class, 'live']);
+Route::get('/news', [NewsController::class, 'index']);
+Route::get('/ping', [SystemController::class, 'ping']);
+Route::get('/live-matches/count', [SystemController::class, 'liveMatchesCount']);
+Route::get('/public/players', [DiscoveryController::class, 'publicPlayers']);
+Route::get('/contracts/live', [DiscoveryController::class, 'contractsLive']);
+Route::get('/player-of-week', [DiscoveryController::class, 'playerOfWeek']);
+Route::get('/trending/week', [DiscoveryController::class, 'trendingWeek']);
+Route::get('/rising-stars', [DiscoveryController::class, 'risingStars']);
+Route::get('/club-needs', [DiscoveryController::class, 'clubNeeds']);
+Route::prefix('discovery')->group(function () {
+    Route::get('/manager-needs', [DiscoveryController::class, 'managerNeeds']);
+});
+Route::get('/billing/plans', [BillingController::class, 'plans']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('players', PlayerController::class)->only(['index', 'show', 'update']);
@@ -44,4 +60,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/contacts/inbox', [ContactController::class, 'inbox']);
     Route::get('/contacts/sent', [ContactController::class, 'sent']);
     Route::patch('/contacts/{id}/status', [ContactController::class, 'changeStatus']);
+
+    Route::get('/notifications/count', [SystemController::class, 'notificationsCount']);
+    Route::get('/users', [SystemController::class, 'usersIndex']);
+
+    Route::get('/billing/subscription', [BillingController::class, 'currentSubscription']);
+    Route::post('/billing/subscribe', [BillingController::class, 'subscribe']);
+    Route::post('/billing/cancel', [BillingController::class, 'cancel']);
+    Route::get('/billing/payments', [BillingController::class, 'payments']);
+    Route::get('/billing/invoices', [BillingController::class, 'invoices']);
 });

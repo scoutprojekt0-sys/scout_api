@@ -42,6 +42,24 @@ class NewsController extends Controller
         ]);
     }
 
+    public function index(): JsonResponse
+    {
+        $external = $this->externalFeed->fetch(20);
+        if ($external !== []) {
+            return response()->json([
+                'ok' => true,
+                'data' => $external,
+            ]);
+        }
+
+        $internal = $this->fromOpportunities(20);
+
+        return response()->json([
+            'ok' => true,
+            'data' => $internal,
+        ]);
+    }
+
     private function fromOpportunities(int $limit): array
     {
         $rows = DB::table('opportunities')
