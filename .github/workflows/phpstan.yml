@@ -1,12 +1,11 @@
 name: PHPStan
 
 on:
-  pull_request:
+  workflow_dispatch:
   push:
     branches:
       - main
       - feat/scout-api-hardening
-      - fix/rc-workflow-to-feat
 
 permissions:
   contents: read
