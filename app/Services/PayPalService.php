@@ -3,25 +3,35 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use RuntimeException;
 
 class PayPalService
 {
-    private string $clientId;
-    private string $secret;
+    private string $clientId = '';
+    private string $secret = '';
     private string $baseUrl;
 
     public function __construct()
     {
-        $this->clientId = config('services.paypal.client_id');
-        $this->secret = config('services.paypal.secret');
+        $this->clientId = (string) config('services.paypal.client_id', '');
+        $this->secret = (string) config('services.paypal.secret', '');
         $mode = config('services.paypal.mode', 'sandbox');
         $this->baseUrl = $mode === 'live'
             ? 'https://api-m.paypal.com'
             : 'https://api-m.sandbox.paypal.com';
     }
 
+    private function ensureConfigured(): void
+    {
+        if ($this->clientId === '' || $this->secret === '') {
+            throw new RuntimeException('PayPal is not configured. Set PAYPAL_CLIENT_ID and PAYPAL_SECRET in your .env file.');
+        }
+    }
+
     private function getAccessToken(): string
     {
+        $this->ensureConfigured();
+
         $response = Http::withBasicAuth($this->clientId, $this->secret)
             ->asForm()
             ->post($this->baseUrl . '/v1/oauth2/token', [
