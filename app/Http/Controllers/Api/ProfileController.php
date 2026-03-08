@@ -17,18 +17,70 @@ use Illuminate\Http\Request;
 class ProfileController extends Controller
 {
     // Public oyuncu listesi (arama/sıralama için)
+    public function publicQualitySummary(): JsonResponse
+    {
+        $profiles = PlayerProfile::query()
+            ->select(['user_id', 'position', 'bio', 'current_market_value', 'updated_at'])
+            ->get();
+        $cards = PlayerProfileCard::query()
+            ->select(['user_id', 'profile_photo_url', 'overall_rating', 'updated_at'])
+            ->get()
+            ->keyBy('user_id');
+
+        $rows = $profiles->map(function ($profile) use ($cards) {
+            $card = $cards->get($profile->user_id);
+            $score = collect([
+                !empty($profile->position),
+                !empty($profile->bio),
+                !empty($card?->profile_photo_url),
+                (float) ($card?->overall_rating ?? 0) > 0,
+                (float) ($profile->current_market_value ?? 0) > 0,
+            ])->filter(fn ($v) => $v === true)->count() * 20;
+
+            $updatedAt = $profile->updated_at ?? $card?->updated_at;
+            return [
+                'score' => $score,
+                'updated_at' => $updatedAt,
+            ];
+        });
+
+        $total = $rows->count();
+        $high = $rows->where('score', '>=', 80)->count();
+        $medium = $rows->whereBetween('score', [50, 79])->count();
+        $low = $rows->where('score', '<', 50)->count();
+        $recent = $rows->filter(fn ($row) => !empty($row['updated_at']) && now()->diffInDays($row['updated_at']) <= 7)->count();
+
+        return response()->json([
+            'ok' => true,
+            'data' => [
+                'total_profiles' => $total,
+                'quality_high' => $high,
+                'quality_medium' => $medium,
+                'quality_low' => $low,
+                'updated_last_7_days' => $recent,
+            ],
+        ]);
+    }
+
     public function publicPlayers(Request $request): JsonResponse
     {
         $limit = max(1, min((int) $request->query('limit', 100), 500));
+        $page = max(1, (int) $request->query('page', 1));
+        $perPage = max(1, min((int) $request->query('per_page', 24), 100));
         $q = trim((string) $request->query('q', ''));
         $sport = trim((string) $request->query('sport', ''));
         $transferCategory = trim((string) $request->query('transfer_category', ''));
         $scoutRadar = trim((string) $request->query('scout_radar', ''));
         $positionFilter = trim((string) $request->query('position', ''));
         $leagueFilter = trim((string) $request->query('league', ''));
+        $contractStatusFilter = trim((string) $request->query('contract_status', ''));
         $ratingMin = (float) $request->query('rating_min', 0);
         $ageMin = (int) $request->query('age_min', 0);
         $ageMax = (int) $request->query('age_max', 0);
+        $marketMin = (float) $request->query('market_min', 0);
+        $marketMax = (float) $request->query('market_max', 0);
+        $qualityMin = (int) $request->query('quality_min', 0);
+        $sort = trim((string) $request->query('sort', 'rating_desc'));
 
         $users = User::query()
             ->where('role', 'player')
@@ -70,6 +122,7 @@ class ProfileController extends Controller
             $club = (string) ($profile->current_team ?? '-');
             $rating = (float) ($card->overall_rating ?? $latest?->rating ?? 0);
             $age = (int) ($card->age ?? $profile?->age ?? 0);
+            $marketValue = (float) ($profile->current_market_value ?? 0);
 
             $hasContractDate = !empty($profile?->contract_expires);
             $contractActiveByDate = $hasContractDate && $profile->contract_expires?->isFuture();
@@ -80,6 +133,16 @@ class ProfileController extends Controller
             $radarNew = $user->created_at && $user->created_at->gt(now()->subDays(30));
             $radarRising = $rating >= 7.5;
             $radarHidden = ((int) ($card->viewers_count ?? 0) < 250) && $rating >= 7.0;
+            $qualityScore = collect([
+                !empty($position),
+                $age > 0,
+                !empty($club) && $club !== '-',
+                $rating > 0,
+                $marketValue > 0,
+                !empty($card?->profile_photo_url),
+                !empty($profile?->bio),
+            ])->filter(fn ($v) => $v === true)->count() * 14;
+            $qualityScore = min(100, $qualityScore);
 
             return [
                 'id' => $user->id,
@@ -91,6 +154,7 @@ class ProfileController extends Controller
                 'league' => (string) ($card->sport_level ?? '-'),
                 'club' => $club,
                 'rating' => $rating,
+                'market_value' => $marketValue,
                 'nationality' => (string) ($profile?->nationality?->name ?? '-'),
                 'profile_photo_url' => $card->profile_photo_url,
                 'contract_status' => $contractStatus,
@@ -98,6 +162,9 @@ class ProfileController extends Controller
                 'radar_new' => $radarNew,
                 'radar_rising' => $radarRising,
                 'radar_hidden' => $radarHidden,
+                'quality_score' => $qualityScore,
+                'data_source' => 'NextScout API',
+                'updated_at' => optional($profile?->updated_at ?? $card?->updated_at ?? $user->updated_at)->toIso8601String(),
             ];
         });
 
@@ -132,6 +199,18 @@ class ProfileController extends Controller
             $players = $players->filter(fn ($p) => (float) $p['rating'] >= $ratingMin);
         }
 
+        if ($marketMin > 0) {
+            $players = $players->filter(fn ($p) => (float) ($p['market_value'] ?? 0) >= $marketMin);
+        }
+
+        if ($marketMax > 0) {
+            $players = $players->filter(fn ($p) => (float) ($p['market_value'] ?? 0) <= $marketMax);
+        }
+
+        if ($qualityMin > 0) {
+            $players = $players->filter(fn ($p) => (int) ($p['quality_score'] ?? 0) >= $qualityMin);
+        }
+
         if ($ageMin > 0 || $ageMax > 0) {
             $players = $players->filter(function ($p) use ($ageMin, $ageMax) {
                 $age = (int) ($p['age'] ?? 0);
@@ -149,6 +228,13 @@ class ProfileController extends Controller
         }
 
         $transferCategoryLower = mb_strtolower($transferCategory);
+        if ($contractStatusFilter !== '') {
+            $filterStatus = mb_strtolower($contractStatusFilter);
+            if (in_array($filterStatus, ['active', 'free'], true)) {
+                $players = $players->filter(fn ($p) => mb_strtolower((string) ($p['contract_status'] ?? '')) === $filterStatus);
+            }
+        }
+
         if ($transferCategoryLower === 'sozlesmeli') {
             $players = $players->filter(fn ($p) => (string) ($p['contract_status'] ?? '') === 'active');
         } elseif ($transferCategoryLower === 'bosta') {
@@ -166,9 +252,31 @@ class ProfileController extends Controller
             $players = $players->filter(fn ($p) => (bool) ($p['radar_hidden'] ?? false) === true);
         }
 
+        $players = match ($sort) {
+            'name_asc' => $players->sortBy(fn ($p) => mb_strtolower((string) ($p['name'] ?? ''))),
+            'age_asc' => $players->sortBy(fn ($p) => (int) ($p['age'] ?? 999)),
+            'age_desc' => $players->sortByDesc(fn ($p) => (int) ($p['age'] ?? 0)),
+            'rating_asc' => $players->sortBy(fn ($p) => (float) ($p['rating'] ?? 0)),
+            'value_desc' => $players->sortByDesc(fn ($p) => (float) ($p['market_value'] ?? 0)),
+            'updated_desc' => $players->sortByDesc(fn ($p) => strtotime((string) ($p['updated_at'] ?? '1970-01-01'))),
+            default => $players->sortByDesc(fn ($p) => (float) ($p['rating'] ?? 0)),
+        };
+
+        $total = $players->count();
+        $lastPage = max(1, (int) ceil($total / $perPage));
+        $page = min($page, $lastPage);
+        $items = $players->slice(($page - 1) * $perPage, $perPage)->values()->all();
+
         return response()->json([
             'ok' => true,
-            'data' => array_values($players->toArray()),
+            'data' => $items,
+            'meta' => [
+                'total' => $total,
+                'page' => $page,
+                'per_page' => $perPage,
+                'last_page' => $lastPage,
+                'sort' => $sort,
+            ],
         ]);
     }
 
@@ -238,6 +346,17 @@ class ProfileController extends Controller
                     'latest' => $latestStat,
                 ],
                 'videos' => $videos,
+                'data_quality' => [
+                    'score' => collect([
+                        !empty($profile?->position),
+                        !empty($profile?->bio),
+                        !empty($card?->profile_photo_url),
+                        (float) ($card?->overall_rating ?? 0) > 0 || (float) ($latestStat?->rating ?? 0) > 0,
+                        (int) ($statsSummary['matches'] ?? 0) > 0,
+                    ])->filter(fn ($v) => $v === true)->count() * 20,
+                    'updated_at' => optional($profile?->updated_at ?? $card?->updated_at ?? $user->updated_at)->toIso8601String(),
+                    'source' => 'NextScout API',
+                ],
             ],
         ]);
     }

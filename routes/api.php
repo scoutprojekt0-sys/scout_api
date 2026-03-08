@@ -188,6 +188,7 @@ Route::get('/success-stories', [SuccessStoryController::class, 'index']);
 Route::get('/users', [AuthController::class, 'users']);
 Route::get('/public/players', [ProfileController::class, 'publicPlayers']);
 Route::get('/public/players/{userId}/profile', [ProfileController::class, 'publicPlayerProfile']);
+Route::get('/public/players/quality-summary', [ProfileController::class, 'publicQualitySummary']);
 Route::get('/public/staff/{userId}/profile', [StaffProfileController::class, 'publicProfile']);
 Route::get('/public/lawyers', [LawyerController::class, 'publicIndex']);
 
