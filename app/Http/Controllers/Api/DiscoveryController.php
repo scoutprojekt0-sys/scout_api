@@ -12,15 +12,14 @@ class DiscoveryController extends Controller
     {
         $search = request('search');
         $position = request('position');
-        $country = request('country');
+        $city = request('city');
 
         $players = DB::table('users')
             ->where('role', 'player')
-            ->where('is_public', true)
             ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
             ->when($position, fn($q) => $q->where('position', $position))
-            ->when($country, fn($q) => $q->where('country', $country))
-            ->select('id', 'name', 'position', 'country', 'age', 'photo_url')
+            ->when($city, fn($q) => $q->where('city', $city))
+            ->select('id', 'name', 'position', 'city', 'age', 'photo_url')
             ->paginate(20);
 
         return response()->json($players);
@@ -31,8 +30,13 @@ class DiscoveryController extends Controller
         $contracts = DB::table('contracts')
             ->where('status', 'active')
             ->where('end_date', '>', now())
-            ->join('users', 'contracts.player_id', '=', 'users.id')
-            ->select('contracts.*', 'users.name as player_name')
+            ->join('users as players', 'contracts.player_id', '=', 'players.id')
+            ->join('users as clubs', 'contracts.club_id', '=', 'clubs.id')
+            ->select(
+                'contracts.*',
+                'players.name as player_name',
+                'clubs.name as club_name'
+            )
             ->orderBy('contracts.created_at', 'desc')
             ->limit(10)
             ->get();
@@ -42,10 +46,11 @@ class DiscoveryController extends Controller
 
     public function playerOfWeek(): JsonResponse
     {
-        // Mock data - integrate with real analytics later
+        // Get player with highest rating from last week
         $player = DB::table('users')
             ->where('role', 'player')
-            ->inRandomOrder()
+            ->where('created_at', '>=', now()->subDays(7))
+            ->orderBy('rating', 'desc')
             ->first();
 
         return response()->json($player ?: []);
@@ -67,6 +72,7 @@ class DiscoveryController extends Controller
     {
         $stars = DB::table('users')
             ->where('role', 'player')
+            ->whereNotNull('age')
             ->where('age', '<=', 21)
             ->orderBy('rating', 'desc')
             ->limit(10)
@@ -78,9 +84,11 @@ class DiscoveryController extends Controller
     public function clubNeeds(): JsonResponse
     {
         $needs = DB::table('opportunities')
-            ->where('type', 'club_need')
-            ->where('status', 'active')
-            ->orderBy('created_at', 'desc')
+            ->where('status', 'open')
+            ->join('users as teams', 'opportunities.team_user_id', '=', 'teams.id')
+            ->where('teams.role', 'team')
+            ->select('opportunities.*', 'teams.name as team_name')
+            ->orderBy('opportunities.created_at', 'desc')
             ->paginate(20);
 
         return response()->json($needs);
@@ -89,9 +97,11 @@ class DiscoveryController extends Controller
     public function managerNeeds(): JsonResponse
     {
         $needs = DB::table('opportunities')
-            ->where('type', 'manager_need')
-            ->where('status', 'active')
-            ->orderBy('created_at', 'desc')
+            ->where('status', 'open')
+            ->join('users as teams', 'opportunities.team_user_id', '=', 'teams.id')
+            ->where('teams.role', 'manager')
+            ->select('opportunities.*', 'teams.name as manager_name')
+            ->orderBy('opportunities.created_at', 'desc')
             ->paginate(20);
 
         return response()->json($needs);

@@ -8,6 +8,25 @@ use Illuminate\Support\Facades\DB;
 
 class NewsController extends Controller
 {
+    public function index(): JsonResponse
+    {
+        // Return news/opportunities list for general news feed
+        $opportunities = DB::table('opportunities')
+            ->leftJoin('users as teams', 'teams.id', '=', 'opportunities.team_user_id')
+            ->where('opportunities.status', 'open')
+            ->orderByDesc('opportunities.created_at')
+            ->paginate(20, [
+                'opportunities.id',
+                'opportunities.title',
+                'opportunities.position',
+                'opportunities.city',
+                'opportunities.created_at as published_at',
+                'teams.name as source',
+            ]);
+
+        return response()->json($opportunities);
+    }
+
     public function live(): JsonResponse
     {
         $rows = DB::table('opportunities')

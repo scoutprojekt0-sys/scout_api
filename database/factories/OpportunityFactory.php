@@ -19,23 +19,24 @@ class OpportunityFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
+            'team_user_id' => User::factory(),
             'title' => fake()->jobTitle() . ' Position Available',
-            'description' => fake()->paragraphs(3, true),
-            'type' => fake()->randomElement(['club_need', 'manager_need', 'trial', 'contract']),
-            'location' => fake()->city() . ', ' . fake()->country(),
-            'salary' => fake()->optional()->numberBetween(30000, 500000),
-            'status' => 'active',
+            'position' => fake()->randomElement(['Forward', 'Midfielder', 'Defender', 'Goalkeeper']),
+            'age_min' => fake()->numberBetween(18, 25),
+            'age_max' => fake()->numberBetween(26, 35),
+            'city' => fake()->city(),
+            'details' => fake()->paragraphs(3, true),
+            'status' => 'open',
         ];
     }
 
     /**
-     * Indicate that the opportunity is inactive.
+     * Indicate that the opportunity is closed.
      */
-    public function inactive(): static
+    public function closed(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'inactive',
+            'status' => 'closed',
         ]);
     }
 }

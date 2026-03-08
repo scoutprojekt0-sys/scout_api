@@ -19,35 +19,37 @@ class DemoDataSeeder extends Seeder
                 'email' => "player{$i}@demo.com",
                 'password' => bcrypt('password'),
                 'role' => 'player',
-                'is_public' => true,
+                'city' => ['Istanbul', 'Ankara', 'Izmir', 'Bursa'][rand(0, 3)],
                 'position' => ['Forward', 'Midfielder', 'Defender', 'Goalkeeper'][rand(0, 3)],
-                'country' => ['Turkey', 'Germany', 'Spain', 'England'][rand(0, 3)],
                 'age' => rand(18, 30),
                 'rating' => rand(60, 95) / 10,
                 'views_count' => rand(0, 1000),
             ]);
         }
 
-        // Create demo clubs
-        $clubs = [];
+        // Create demo teams
+        $teams = [];
         for ($i = 1; $i <= 3; $i++) {
-            $clubs[] = User::create([
+            $teams[] = User::create([
                 'name' => "Demo Club {$i}",
                 'email' => "club{$i}@demo.com",
                 'password' => bcrypt('password'),
-                'role' => 'club',
+                'role' => 'team',
+                'city' => 'Istanbul',
             ]);
         }
 
         // Create demo opportunities
-        foreach ($clubs as $club) {
+        foreach ($teams as $team) {
             Opportunity::create([
-                'user_id' => $club->id,
+                'team_user_id' => $team->id,
                 'title' => "Midfielder Position Available",
-                'description' => "Looking for a talented midfielder to join our squad",
-                'type' => 'club_need',
-                'location' => 'Istanbul, Turkey',
-                'status' => 'active',
+                'position' => 'Midfielder',
+                'age_min' => 20,
+                'age_max' => 28,
+                'city' => 'Istanbul',
+                'details' => "Looking for a talented midfielder to join our squad",
+                'status' => 'open',
             ]);
         }
 
@@ -55,7 +57,7 @@ class DemoDataSeeder extends Seeder
         foreach (array_slice($players, 0, 5) as $index => $player) {
             DB::table('contracts')->insert([
                 'player_id' => $player->id,
-                'club_id' => $clubs[rand(0, count($clubs) - 1)]->id,
+                'club_id' => $teams[rand(0, count($teams) - 1)]->id,
                 'contract_type' => 'permanent',
                 'start_date' => now()->subMonths(rand(1, 12)),
                 'end_date' => now()->addMonths(rand(12, 36)),
@@ -72,8 +74,8 @@ class DemoDataSeeder extends Seeder
             DB::table('notifications')->insert([
                 'user_id' => $player->id,
                 'type' => 'opportunity',
-                'message' => 'New opportunity matches your profile',
-                'data' => json_encode(['opportunity_id' => 1]),
+                'payload' => json_encode(['opportunity_id' => 1]),
+                'is_read' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

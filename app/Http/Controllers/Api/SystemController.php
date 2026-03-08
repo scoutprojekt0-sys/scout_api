@@ -27,7 +27,7 @@ class SystemController extends Controller
             300,
             fn() => DB::table('notifications')
                 ->where('user_id', $user->id)
-                ->where('read_at', null)
+                ->where('is_read', false)
                 ->count()
         );
 

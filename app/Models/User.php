@@ -18,11 +18,65 @@ class User extends Authenticatable
         'role',
         'city',
         'phone',
+        'stripe_customer_id',
+        'paypal_customer_id',
+        'subscription_status',
+        'is_public',
+        'position',
+        'country',
+        'age',
+        'photo_url',
+        'views_count',
+        'rating',
     ];
 
     protected $hidden = [
         'password',
+        'stripe_customer_id',
+        'paypal_customer_id',
     ];
+
+    protected $casts = [
+        'is_public' => 'boolean',
+        'age' => 'integer',
+        'views_count' => 'integer',
+        'rating' => 'decimal:2',
+    ];
+
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function opportunities()
+    {
+        return $this->hasMany(Opportunity::class, 'team_user_id');
+    }
+
+    public function applications()
+    {
+        return $this->hasMany(Application::class, 'player_user_id');
+    }
+
+    public function sentContacts()
+    {
+        return $this->hasMany(Contact::class, 'from_user_id');
+    }
+
+    public function receivedContacts()
+    {
+        return $this->hasMany(Contact::class, 'to_user_id');
+    }
+
+    public function media()
+    {
+        return $this->hasMany(Media::class);
+    }
 
     protected static function booted(): void
     {
