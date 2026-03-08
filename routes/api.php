@@ -2,14 +2,37 @@
 
 use App\Http\Controllers\Api\ApplicationController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\DiscoveryController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\OpportunityController;
 use App\Http\Controllers\Api\PlayerController;
 use App\Http\Controllers\Api\StaffController;
+use App\Http\Controllers\Api\SystemController;
 use App\Http\Controllers\Api\TeamController;
 use Illuminate\Support\Facades\Route;
+
+// Public System Endpoints
+Route::get('/ping', [SystemController::class, 'ping']);
+Route::get('/live-matches/count', [SystemController::class, 'liveMatchesCount']);
+
+// Public Discovery Endpoints
+Route::get('/public/players', [DiscoveryController::class, 'publicPlayers']);
+Route::get('/contracts/live', [DiscoveryController::class, 'contractsLive']);
+Route::get('/player-of-week', [DiscoveryController::class, 'playerOfWeek']);
+Route::get('/trending/week', [DiscoveryController::class, 'trendingWeek']);
+Route::get('/rising-stars', [DiscoveryController::class, 'risingStars']);
+Route::get('/club-needs', [DiscoveryController::class, 'clubNeeds']);
+Route::prefix('discovery')->group(function () {
+    Route::get('/manager-needs', [DiscoveryController::class, 'managerNeeds']);
+});
+
+// Public News & Billing
+Route::get('/news/live', [NewsController::class, 'live']);
+Route::get('/news', [NewsController::class, 'index']);
+Route::get('/billing/plans', [BillingController::class, 'plans']);
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth');
@@ -28,10 +51,12 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-Route::get('/news/live', [NewsController::class, 'live']);
-
 Route::middleware(['auth:sanctum', 'reject_legacy_token', 'throttle:api'])->group(function () {
-    Route::apiResource('players', PlayerController::class)->only(['index', 'show', 'update']);
+    // System
+    Route::get('/notifications/count', [SystemController::class, 'notificationsCount']);
+    Route::get('/users', [SystemController::class, 'usersIndex']);
+
+    // Players, Teams, Staff
     Route::apiResource('teams', TeamController::class)->only(['index', 'show', 'update']);
     Route::apiResource('staff', StaffController::class)->only(['index', 'show', 'update']);
 
@@ -55,4 +80,11 @@ Route::middleware(['auth:sanctum', 'reject_legacy_token', 'throttle:api'])->grou
     Route::get('/contacts/inbox', [ContactController::class, 'inbox'])->middleware('ability:contact:read');
     Route::get('/contacts/sent', [ContactController::class, 'sent'])->middleware('ability:contact:read');
     Route::patch('/contacts/{id}/status', [ContactController::class, 'changeStatus'])->middleware('ability:contact:write');
+
+    // Billing
+    Route::get('/billing/subscription', [BillingController::class, 'currentSubscription']);
+    Route::post('/billing/subscribe', [BillingController::class, 'subscribe']);
+    Route::post('/billing/cancel', [BillingController::class, 'cancel']);
+    Route::get('/billing/payments', [BillingController::class, 'payments']);
+    Route::get('/billing/invoices', [BillingController::class, 'invoices']);
 });
