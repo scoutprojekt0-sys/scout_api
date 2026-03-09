@@ -22,10 +22,15 @@ use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\Week7AnalyticsController;
 use App\Http\Controllers\Api\Week8TransparencyController;
 use App\Http\Controllers\Api\Week10AnomalyController;
+use App\Http\Controllers\Api\Week11WorkloadController;
+use App\Http\Controllers\Api\Week12PublicTransparencyController;
 use Illuminate\Support\Facades\Route;
 
 // System endpoints
 Route::get('/ping', [SystemController::class, 'ping']);
+
+// Week 12 - Public Transparency (no auth required)
+Route::get('/transparency/trust-report', [Week12PublicTransparencyController::class, 'platformTrustReport']);
 
 // Data Quality & Trust endpoints (Week 1)
 Route::prefix('data-quality')->group(function () {
@@ -171,4 +176,8 @@ Route::middleware(['auth:sanctum', 'reject_legacy_token', 'throttle:api'])->grou
     Route::post('/billing/cancel', [BillingController::class, 'cancel']);
     Route::get('/billing/payments', [BillingController::class, 'payments']);
     Route::get('/billing/invoices', [BillingController::class, 'invoices']);
+
+    // Week 11 - Reviewer Workload & SLA
+    Route::get('/analytics/reviewer-workload', [Week11WorkloadController::class, 'reviewerWorkload']);
+    Route::get('/analytics/sla-dashboard', [Week11WorkloadController::class, 'slaDashboard']);
 });
