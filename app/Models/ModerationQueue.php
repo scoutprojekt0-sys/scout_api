@@ -31,6 +31,9 @@ class ModerationQueue extends Model
         'requires_dual_approval',
         'second_reviewer_id',
         'second_review_at',
+        'anomaly_score',
+        'risk_score',
+        'has_conflicts',
     ];
 
     protected $casts = [
@@ -41,6 +44,9 @@ class ModerationQueue extends Model
         'reviewed_at' => 'datetime',
         'second_review_at' => 'datetime',
         'requires_dual_approval' => 'boolean',
+        'anomaly_score' => 'decimal:2',
+        'risk_score' => 'decimal:2',
+        'has_conflicts' => 'boolean',
     ];
 
     public function submitter()

@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\SystemController;
 use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\Week7AnalyticsController;
 use App\Http\Controllers\Api\Week8TransparencyController;
+use App\Http\Controllers\Api\Week10AnomalyController;
 use Illuminate\Support\Facades\Route;
 
 // System endpoints
@@ -41,8 +42,10 @@ Route::prefix('data-quality')->group(function () {
 // Moderation Queue endpoints
 Route::prefix('moderation')->middleware('auth:sanctum')->group(function () {
     Route::get('/', [ModerationController::class, 'index']);
+    Route::get('/high-risk', [Week10AnomalyController::class, 'highRiskQueue']);
     Route::get('/stats', [ModerationController::class, 'stats']);
     Route::get('/{id}', [ModerationController::class, 'show']);
+    Route::post('/{id}/score', [Week10AnomalyController::class, 'scoreQueue']);
     Route::post('/{id}/approve', [ModerationController::class, 'approve']);
     Route::post('/{id}/reject', [ModerationController::class, 'reject']);
     Route::post('/{id}/flag', [ModerationController::class, 'flag']);
