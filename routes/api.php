@@ -19,6 +19,8 @@ use App\Http\Controllers\Api\PlayerTransferController;
 use App\Http\Controllers\Api\StaffController;
 use App\Http\Controllers\Api\SystemController;
 use App\Http\Controllers\Api\TeamController;
+use App\Http\Controllers\Api\Week7AnalyticsController;
+use App\Http\Controllers\Api\Week8TransparencyController;
 use Illuminate\Support\Facades\Route;
 
 // System endpoints
@@ -28,6 +30,9 @@ Route::get('/ping', [SystemController::class, 'ping']);
 Route::prefix('data-quality')->group(function () {
     Route::get('/dashboard', [DataQualityController::class, 'dashboard']);
     Route::get('/report', [DataQualityController::class, 'report']);
+    Route::get('/source-health', [Week8TransparencyController::class, 'sourceHealth']);
+    Route::get('/transparency/players', [Week8TransparencyController::class, 'players']);
+    Route::get('/transparency/players/{playerId}', [Week8TransparencyController::class, 'playerDetail']);
     Route::get('/audit-log', [DataQualityController::class, 'auditLog']);
     Route::get('/conflicts', [DataQualityController::class, 'conflictingData']);
     Route::get('/missing-source', [DataQualityController::class, 'missingSource']);
@@ -123,6 +128,10 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'reject_legacy_token', 'throttle:api'])->group(function () {
+    // Week 7 analytics
+    Route::get('/analytics/admin-overview', [Week7AnalyticsController::class, 'adminOverview']);
+    Route::get('/analytics/team/{teamId}', [Week7AnalyticsController::class, 'teamScoutingFunnel']);
+
     // System
     Route::get('/notifications/count', [SystemController::class, 'notificationsCount']);
     Route::get('/users', [SystemController::class, 'usersIndex']);

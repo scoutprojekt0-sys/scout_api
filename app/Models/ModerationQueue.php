@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use InvalidArgumentException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -75,20 +76,36 @@ class ModerationQueue extends Model
 
     public function approve(int $reviewerId, ?string $notes = null): bool
     {
-        if ($this->requires_dual_approval && !$this->second_reviewer_id) {
+        if ($this->requires_dual_approval) {
+            // First approval: keep status pending until an eligible second reviewer confirms.
+            if (is_null($this->reviewed_by)) {
+                $this->update([
+                    'reviewed_by' => $reviewerId,
+                    'reviewed_at' => now(),
+                    'reviewer_notes' => $notes,
+                ]);
+
+                return false;
+            }
+
+            if ((int) $this->reviewed_by === $reviewerId) {
+                throw new InvalidArgumentException('Ayni reviewer ikinci onayi veremez.');
+            }
+
             $this->update([
-                'reviewed_by' => $reviewerId,
-                'reviewed_at' => now(),
-                'reviewer_notes' => $notes,
+                'status' => 'approved',
+                'second_reviewer_id' => $reviewerId,
+                'second_review_at' => now(),
+                'reviewer_notes' => $notes ? trim(($this->reviewer_notes ?? '')."\n\nSecond approval: {$notes}") : $this->reviewer_notes,
             ]);
 
-            return false; // Still needs second approval
+            return true;
         }
 
         $this->update([
             'status' => 'approved',
-            $this->second_reviewer_id ? 'second_reviewer_id' : 'reviewed_by' => $reviewerId,
-            $this->second_reviewer_id ? 'second_review_at' : 'reviewed_at' => now(),
+            'reviewed_by' => $reviewerId,
+            'reviewed_at' => now(),
             'reviewer_notes' => $notes,
         ]);
 

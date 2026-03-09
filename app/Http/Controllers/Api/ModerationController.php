@@ -5,14 +5,84 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\DataAuditLog;
 use App\Models\ModerationQueue;
+use InvalidArgumentException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class ModerationController extends Controller
 {
+    private function canModerate(Request $request): bool
+    {
+        $user = $request->user();
+        if (! $user) {
+            return false;
+        }
+
+        $editorRole = (string) ($user->editor_role ?? 'none');
+        $legacyStaffRole = in_array((string) $user->role, ['manager', 'coach', 'scout'], true);
+
+        return in_array($editorRole, ['reviewer', 'senior_reviewer', 'admin'], true) || $legacyStaffRole;
+    }
+
+    private function ensureModerationAccess(Request $request): ?JsonResponse
+    {
+        if ($this->canModerate($request)) {
+            return null;
+        }
+
+        return response()->json([
+            'ok' => false,
+            'message' => 'Moderasyon yetkiniz yok.',
+        ], 403);
+    }
+
+    private function ensureCriticalPermission(Request $request, ModerationQueue $item): ?JsonResponse
+    {
+        if ($item->priority !== 'critical') {
+            return null;
+        }
+
+        $user = $request->user();
+        $editorRole = (string) ($user->editor_role ?? 'none');
+        $canVerifyCritical = (bool) ($user->can_verify_critical ?? false);
+
+        if ($canVerifyCritical || in_array($editorRole, ['senior_reviewer', 'admin'], true)) {
+            return null;
+        }
+
+        return response()->json([
+            'ok' => false,
+            'message' => 'Kritik kayitlar icin ek onay yetkisi gerekli.',
+        ], 403);
+    }
+
+    private function ensureDualApprovalPermission(Request $request, ModerationQueue $item): ?JsonResponse
+    {
+        if (! $item->requires_dual_approval || is_null($item->reviewed_by)) {
+            return null;
+        }
+
+        $user = $request->user();
+        $editorRole = (string) ($user->editor_role ?? 'none');
+        $canDualApprove = (bool) ($user->can_dual_approve ?? false);
+
+        if ($canDualApprove || in_array($editorRole, ['senior_reviewer', 'admin'], true)) {
+            return null;
+        }
+
+        return response()->json([
+            'ok' => false,
+            'message' => 'Ikinci onay icin dual-approval yetkisi gerekli.',
+        ], 403);
+    }
+
     public function index(Request $request): JsonResponse
     {
+        if ($denied = $this->ensureModerationAccess($request)) {
+            return $denied;
+        }
+
         $query = ModerationQueue::query()
             ->with(['submitter:id,name,email', 'reviewer:id,name,email'])
             ->orderBy('priority', 'desc')
@@ -42,6 +112,10 @@ class ModerationController extends Controller
 
     public function show(int $id): JsonResponse
     {
+        if ($denied = $this->ensureModerationAccess(request())) {
+            return $denied;
+        }
+
         $item = ModerationQueue::with([
             'submitter:id,name,email',
             'reviewer:id,name,email',
@@ -56,6 +130,10 @@ class ModerationController extends Controller
 
     public function approve(Request $request, int $id): JsonResponse
     {
+        if ($denied = $this->ensureModerationAccess($request)) {
+            return $denied;
+        }
+
         $validator = Validator::make($request->all(), [
             'notes' => 'nullable|string|max:1000',
         ]);
@@ -69,9 +147,27 @@ class ModerationController extends Controller
         }
 
         $item = ModerationQueue::findOrFail($id);
+
+        if ($denied = $this->ensureCriticalPermission($request, $item)) {
+            return $denied;
+        }
+
+        if ($denied = $this->ensureDualApprovalPermission($request, $item)) {
+            return $denied;
+        }
+
         $userId = auth()->id();
 
-        if ($item->approve($userId, $request->notes)) {
+        try {
+            $approved = $item->approve($userId, $request->notes);
+        } catch (InvalidArgumentException $e) {
+            return response()->json([
+                'ok' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+
+        if ($approved) {
             // Log the approval
             DataAuditLog::logChange(
                 $item->model_type,
@@ -99,6 +195,10 @@ class ModerationController extends Controller
 
     public function reject(Request $request, int $id): JsonResponse
     {
+        if ($denied = $this->ensureModerationAccess($request)) {
+            return $denied;
+        }
+
         $validator = Validator::make($request->all(), [
             'reason' => 'required|string|min:10|max:1000',
         ]);
@@ -112,6 +212,11 @@ class ModerationController extends Controller
         }
 
         $item = ModerationQueue::findOrFail($id);
+
+        if ($denied = $this->ensureCriticalPermission($request, $item)) {
+            return $denied;
+        }
+
         $userId = auth()->id();
 
         $item->reject($userId, $request->reason);
@@ -135,6 +240,10 @@ class ModerationController extends Controller
 
     public function flag(Request $request, int $id): JsonResponse
     {
+        if ($denied = $this->ensureModerationAccess($request)) {
+            return $denied;
+        }
+
         $validator = Validator::make($request->all(), [
             'reason' => 'required|string|min:10|max:1000',
         ]);
@@ -161,6 +270,10 @@ class ModerationController extends Controller
 
     public function stats(): JsonResponse
     {
+        if ($denied = $this->ensureModerationAccess(request())) {
+            return $denied;
+        }
+
         $stats = [
             'pending_count' => ModerationQueue::where('status', 'pending')->count(),
             'by_priority' => [
