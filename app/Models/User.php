@@ -28,6 +28,26 @@ class User extends Authenticatable
         'photo_url',
         'views_count',
         'rating',
+        'source_url',
+        'confidence_score',
+        'verified_at',
+        'verification_status',
+        'verification_notes',
+        'last_updated_by',
+        'data_version',
+        'has_source',
+        'has_conflicts',
+        'editor_role',
+        'contributions_count',
+        'approved_contributions',
+        'rejected_contributions',
+        'contribution_accuracy',
+        'trust_score',
+        'editor_since',
+        'reviews_count',
+        'avg_review_time_hours',
+        'can_verify_critical',
+        'can_dual_approve',
     ];
 
     protected $hidden = [
@@ -41,6 +61,15 @@ class User extends Authenticatable
         'age' => 'integer',
         'views_count' => 'integer',
         'rating' => 'decimal:2',
+        'confidence_score' => 'decimal:2',
+        'verified_at' => 'datetime',
+        'has_source' => 'boolean',
+        'has_conflicts' => 'boolean',
+        'contribution_accuracy' => 'decimal:2',
+        'trust_score' => 'decimal:2',
+        'editor_since' => 'datetime',
+        'can_verify_critical' => 'boolean',
+        'can_dual_approve' => 'boolean',
     ];
 
     public function subscriptions()

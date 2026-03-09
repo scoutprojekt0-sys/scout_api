@@ -20,5 +20,9 @@ class DatabaseSeeder extends Seeder
                 'phone' => null,
             ]
         );
+
+        $this->call([
+            Week4To6DemoSeeder::class,
+        ]);
     }
 }

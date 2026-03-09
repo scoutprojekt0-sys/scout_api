@@ -10,6 +10,83 @@ use Symfony\Component\HttpFoundation\Response;
 
 class TeamController extends Controller
 {
+    public function overview(int $id): JsonResponse
+    {
+        $team = DB::table('users')
+            ->leftJoin('team_profiles', 'team_profiles.user_id', '=', 'users.id')
+            ->where('users.id', $id)
+            ->where('users.role', 'team')
+            ->select([
+                'users.id',
+                'users.name',
+                'users.city as user_city',
+                'users.created_at',
+                'team_profiles.team_name',
+                'team_profiles.league_level',
+                'team_profiles.city as team_city',
+                'team_profiles.founded_year',
+                'team_profiles.needs_text',
+            ])
+            ->first();
+
+        if (! $team) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Takim bulunamadi.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        $squad = DB::table('player_career_timeline')
+            ->join('users as players', 'players.id', '=', 'player_career_timeline.player_id')
+            ->where('player_career_timeline.club_id', $id)
+            ->where('player_career_timeline.is_current', true)
+            ->where('player_career_timeline.verification_status', 'verified')
+            ->select([
+                'players.id',
+                'players.name',
+                'players.position',
+                'players.age',
+                'player_career_timeline.appearances',
+                'player_career_timeline.goals',
+                'player_career_timeline.assists',
+            ])
+            ->orderByDesc('player_career_timeline.appearances')
+            ->limit(25)
+            ->get();
+
+        $latestTransfers = DB::table('player_transfers')
+            ->join('users as players', 'players.id', '=', 'player_transfers.player_id')
+            ->leftJoin('users as from_club', 'from_club.id', '=', 'player_transfers.from_club_id')
+            ->leftJoin('users as to_club', 'to_club.id', '=', 'player_transfers.to_club_id')
+            ->where(function ($q) use ($id) {
+                $q->where('player_transfers.to_club_id', $id)
+                    ->orWhere('player_transfers.from_club_id', $id);
+            })
+            ->where('player_transfers.verification_status', 'verified')
+            ->orderByDesc('player_transfers.transfer_date')
+            ->limit(10)
+            ->get([
+                'player_transfers.id',
+                'players.name as player_name',
+                'from_club.name as from_club_name',
+                'to_club.name as to_club_name',
+                'player_transfers.fee',
+                'player_transfers.currency',
+                'player_transfers.transfer_type',
+                'player_transfers.transfer_date',
+            ]);
+
+        return response()->json([
+            'ok' => true,
+            'data' => [
+                'team' => $team,
+                'squad_count' => $squad->count(),
+                'squad' => $squad,
+                'latest_transfers' => $latestTransfers,
+            ],
+        ]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -176,6 +253,101 @@ class TeamController extends Controller
             'ok' => true,
             'message' => 'Takim profili guncellendi.',
             'data' => $updated,
+        ]);
+    }
+
+    public function transferSummary(int $id): JsonResponse
+    {
+        $team = DB::table('users')
+            ->where('id', $id)
+            ->where('role', 'team')
+            ->first();
+
+        if (! $team) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Takim bulunamadi.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        $incoming = DB::table('player_transfers')
+            ->where('to_club_id', $id)
+            ->where('verification_status', 'verified')
+            ->count();
+
+        $outgoing = DB::table('player_transfers')
+            ->where('from_club_id', $id)
+            ->where('verification_status', 'verified')
+            ->count();
+
+        $incomingSpend = DB::table('player_transfers')
+            ->where('to_club_id', $id)
+            ->where('verification_status', 'verified')
+            ->sum('fee');
+
+        $outgoingIncome = DB::table('player_transfers')
+            ->where('from_club_id', $id)
+            ->where('verification_status', 'verified')
+            ->sum('fee');
+
+        $latestIncoming = DB::table('player_transfers')
+            ->join('users as players', 'players.id', '=', 'player_transfers.player_id')
+            ->where('player_transfers.to_club_id', $id)
+            ->where('player_transfers.verification_status', 'verified')
+            ->orderByDesc('player_transfers.transfer_date')
+            ->limit(5)
+            ->get([
+                'player_transfers.id',
+                'players.name as player_name',
+                'player_transfers.fee',
+                'player_transfers.currency',
+                'player_transfers.transfer_type',
+                'player_transfers.transfer_date',
+            ]);
+
+        $latestOutgoing = DB::table('player_transfers')
+            ->join('users as players', 'players.id', '=', 'player_transfers.player_id')
+            ->where('player_transfers.from_club_id', $id)
+            ->where('player_transfers.verification_status', 'verified')
+            ->orderByDesc('player_transfers.transfer_date')
+            ->limit(5)
+            ->get([
+                'player_transfers.id',
+                'players.name as player_name',
+                'player_transfers.fee',
+                'player_transfers.currency',
+                'player_transfers.transfer_type',
+                'player_transfers.transfer_date',
+            ]);
+
+        $spendByCurrency = DB::table('player_transfers')
+            ->where('to_club_id', $id)
+            ->where('verification_status', 'verified')
+            ->select('currency', DB::raw('SUM(fee) as total'))
+            ->groupBy('currency')
+            ->get();
+
+        $incomeByCurrency = DB::table('player_transfers')
+            ->where('from_club_id', $id)
+            ->where('verification_status', 'verified')
+            ->select('currency', DB::raw('SUM(fee) as total'))
+            ->groupBy('currency')
+            ->get();
+
+        return response()->json([
+            'ok' => true,
+            'data' => [
+                'team_id' => (int) $id,
+                'incoming_count' => $incoming,
+                'outgoing_count' => $outgoing,
+                'incoming_spend' => (float) $incomingSpend,
+                'outgoing_income' => (float) $outgoingIncome,
+                'net_spend' => (float) $incomingSpend - (float) $outgoingIncome,
+                'incoming_spend_by_currency' => $spendByCurrency,
+                'outgoing_income_by_currency' => $incomeByCurrency,
+                'latest_incoming' => $latestIncoming,
+                'latest_outgoing' => $latestOutgoing,
+            ],
         ]);
     }
 }

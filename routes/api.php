@@ -4,18 +4,88 @@ use App\Http\Controllers\Api\ApplicationController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\ContributionController;
+use App\Http\Controllers\Api\DataQualityController;
 use App\Http\Controllers\Api\DiscoveryController;
 use App\Http\Controllers\Api\MediaController;
+use App\Http\Controllers\Api\ModerationController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\OpportunityController;
+use App\Http\Controllers\Api\PlayerAnalyticsController;
+use App\Http\Controllers\Api\PlayerCareerController;
 use App\Http\Controllers\Api\PlayerController;
+use App\Http\Controllers\Api\PlayerMarketValueController;
+use App\Http\Controllers\Api\PlayerTransferController;
 use App\Http\Controllers\Api\StaffController;
 use App\Http\Controllers\Api\SystemController;
 use App\Http\Controllers\Api\TeamController;
 use Illuminate\Support\Facades\Route;
 
-// Public System Endpoints
+// System endpoints
 Route::get('/ping', [SystemController::class, 'ping']);
+
+// Data Quality & Trust endpoints (Week 1)
+Route::prefix('data-quality')->group(function () {
+    Route::get('/dashboard', [DataQualityController::class, 'dashboard']);
+    Route::get('/report', [DataQualityController::class, 'report']);
+    Route::get('/audit-log', [DataQualityController::class, 'auditLog']);
+    Route::get('/conflicts', [DataQualityController::class, 'conflictingData']);
+    Route::get('/missing-source', [DataQualityController::class, 'missingSource']);
+});
+
+// Moderation Queue endpoints
+Route::prefix('moderation')->middleware('auth:sanctum')->group(function () {
+    Route::get('/', [ModerationController::class, 'index']);
+    Route::get('/stats', [ModerationController::class, 'stats']);
+    Route::get('/{id}', [ModerationController::class, 'show']);
+    Route::post('/{id}/approve', [ModerationController::class, 'approve']);
+    Route::post('/{id}/reject', [ModerationController::class, 'reject']);
+    Route::post('/{id}/flag', [ModerationController::class, 'flag']);
+});
+
+// Player Transfer endpoints
+Route::prefix('transfers')->group(function () {
+    Route::get('/', [PlayerTransferController::class, 'index']);
+    Route::get('/{id}', [PlayerTransferController::class, 'show']);
+    Route::get('/player/{playerId}/timeline', [PlayerTransferController::class, 'timeline']);
+    Route::post('/', [PlayerTransferController::class, 'store'])->middleware('auth:sanctum');
+});
+
+// Player Career Timeline endpoints
+Route::prefix('career')->group(function () {
+    Route::get('/player/{playerId}/timeline', [PlayerCareerController::class, 'timeline']);
+    Route::get('/player/{playerId}/statistics', [PlayerCareerController::class, 'statistics']);
+    Route::post('/', [PlayerCareerController::class, 'store'])->middleware('auth:sanctum');
+});
+
+// Week 6 - Player analytics endpoints
+Route::prefix('players')->group(function () {
+    Route::post('/compare', [PlayerAnalyticsController::class, 'compare']);
+    Route::get('/{playerId}/trend-summary', [PlayerAnalyticsController::class, 'trendSummary']);
+});
+
+// Player Market Value endpoints
+Route::prefix('market-values')->group(function () {
+    Route::get('/', [PlayerMarketValueController::class, 'index']);
+    Route::get('/leaderboard', [PlayerMarketValueController::class, 'leaderboard']);
+    Route::get('/player/{playerId}/history', [PlayerMarketValueController::class, 'history']);
+    Route::get('/player/{playerId}/calculate', [PlayerMarketValueController::class, 'calculate']);
+    Route::get('/player/{playerId}/trends', [PlayerMarketValueController::class, 'trends']);
+    Route::post('/compare', [PlayerMarketValueController::class, 'compare']);
+    Route::post('/', [PlayerMarketValueController::class, 'store'])->middleware('auth:sanctum');
+});
+
+// User Contributions endpoints (Week 3)
+Route::prefix('contributions')->middleware('auth:sanctum')->group(function () {
+    Route::get('/', [ContributionController::class, 'index']);
+    Route::get('/my', [ContributionController::class, 'myContributions']);
+    Route::get('/stats', [ContributionController::class, 'stats']);
+    Route::get('/{id}', [ContributionController::class, 'show']);
+    Route::post('/', [ContributionController::class, 'store']);
+    Route::post('/{id}/approve', [ContributionController::class, 'approve']);
+    Route::post('/{id}/reject', [ContributionController::class, 'reject']);
+    Route::post('/{id}/request-info', [ContributionController::class, 'requestInfo']);
+});
 Route::get('/live-matches/count', [SystemController::class, 'liveMatchesCount']);
 
 // Public Discovery Endpoints
@@ -33,6 +103,7 @@ Route::prefix('discovery')->group(function () {
 Route::get('/news/live', [NewsController::class, 'live']);
 Route::get('/news', [NewsController::class, 'index']);
 Route::get('/billing/plans', [BillingController::class, 'plans']);
+Route::get('/teams/{id}/overview', [TeamController::class, 'overview']);
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth');
@@ -58,6 +129,7 @@ Route::middleware(['auth:sanctum', 'reject_legacy_token', 'throttle:api'])->grou
 
     // Players, Teams, Staff
     Route::apiResource('teams', TeamController::class)->only(['index', 'show', 'update']);
+    Route::get('/teams/{id}/transfer-summary', [TeamController::class, 'transferSummary']);
     Route::apiResource('staff', StaffController::class)->only(['index', 'show', 'update']);
 
     Route::post('/media', [MediaController::class, 'store'])->middleware('ability:media:write');
