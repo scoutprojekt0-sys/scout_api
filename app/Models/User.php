@@ -19,16 +19,22 @@ class User extends Authenticatable
         'role',
         'city',
         'phone',
+        'is_verified',
+        'email_verified_at',
+        'email_verification_token',
     ];
 
     protected $hidden = [
         'password',
+        'email_verification_token',
     ];
 
     protected function casts(): array
     {
         return [
             'password' => 'hashed',
+            'is_verified' => 'boolean',
+            'email_verified_at' => 'datetime',
         ];
     }
 

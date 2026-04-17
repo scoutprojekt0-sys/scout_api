@@ -60,6 +60,8 @@ use Illuminate\Support\Facades\Schema;
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth')->name('register');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth')->name('login');
+    Route::get('/verify-email', [AuthController::class, 'verifyEmail'])->middleware('throttle:auth')->name('verify-email');
+    Route::post('/resend-verification', [AuthController::class, 'resendVerification'])->middleware('throttle:auth')->name('resend-verification');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);

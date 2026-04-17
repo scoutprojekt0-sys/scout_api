@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Mail\EmailVerificationMail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class AuthRegisterProfileCreationTest extends TestCase
@@ -11,6 +13,8 @@ class AuthRegisterProfileCreationTest extends TestCase
 
     public function test_register_creates_player_profile(): void
     {
+        Mail::fake();
+
         $response = $this->postJson('/api/auth/register', [
             'name' => 'Player One',
             'email' => 'player@example.com',
@@ -23,10 +27,13 @@ class AuthRegisterProfileCreationTest extends TestCase
         $userId = (int) $response->json('data.user.id');
 
         $this->assertDatabaseHas('player_profiles', ['user_id' => $userId]);
+        Mail::assertSent(EmailVerificationMail::class, 1);
     }
 
     public function test_register_creates_team_profile_with_default_team_name(): void
     {
+        Mail::fake();
+
         $response = $this->postJson('/api/auth/register', [
             'name' => 'Team Alpha',
             'email' => 'team@example.com',
@@ -42,10 +49,13 @@ class AuthRegisterProfileCreationTest extends TestCase
             'user_id' => $userId,
             'team_name' => 'Team Alpha',
         ]);
+        Mail::assertSent(EmailVerificationMail::class, 1);
     }
 
     public function test_register_creates_staff_profile_for_staff_roles(): void
     {
+        Mail::fake();
+
         $response = $this->postJson('/api/auth/register', [
             'name' => 'Scout User',
             'email' => 'scout@example.com',
@@ -62,10 +72,13 @@ class AuthRegisterProfileCreationTest extends TestCase
             'user_id' => $userId,
             'role_type' => $role,
         ]);
+        Mail::assertSent(EmailVerificationMail::class, 1);
     }
 
     public function test_register_rejects_duplicate_email_case_insensitive(): void
     {
+        Mail::fake();
+
         $first = $this->postJson('/api/auth/register', [
             'name' => 'User One',
             'email' => 'CaseMail@Example.com',
@@ -86,5 +99,6 @@ class AuthRegisterProfileCreationTest extends TestCase
 
         $second->assertStatus(422);
         $second->assertJsonValidationErrors(['email']);
+        Mail::assertSent(EmailVerificationMail::class, 1);
     }
 }
