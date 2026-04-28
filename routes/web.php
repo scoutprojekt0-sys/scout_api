@@ -12,19 +12,9 @@ use Illuminate\Support\Facades\Route;
 
 // Anasayfa - Serve static index.html directly (no CORS issues)
 Route::get('/', function() {
-    $indexPath = base_path('../index.html');
-    if (file_exists($indexPath)) {
-        return response()->file($indexPath);
-    }
-
-    // Fallback to blade view
-    $stats = [
-        'scouts' => '15K',
-        'videos' => '50K',
-        'transfers' => '1,234',
-        'satisfaction' => '92'
-    ];
-    return view('index', ['stats' => $stats]);
+    return response(
+        '<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><meta http-equiv="refresh" content="4;url=http://127.0.0.1:8000/"><title>Legacy Backend</title><style>body{font-family:Arial,sans-serif;background:#0f172a;color:#e5e7eb;display:grid;place-items:center;min-height:100vh;margin:0;padding:24px}.card{max-width:720px;background:#111827;border:1px solid #374151;border-radius:18px;padding:24px;box-shadow:0 24px 80px rgba(0,0,0,.35)}a{color:#93c5fd}</style></head><body><div class="card"><h1>Legacy backend acildi</h1><p>Bu klasor artik aktif backend degil.</p><p>4 saniye icinde aktif backend adresine yonlendirileceksiniz.</p><p>Aktif adres: <a href="http://127.0.0.1:8000/">http://127.0.0.1:8000/</a></p></div></body></html>'
+    )->header('Content-Type', 'text/html; charset=UTF-8');
 })->name('home');
 
 // Live Matches sayfası

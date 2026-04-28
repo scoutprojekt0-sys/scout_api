@@ -1,0 +1,10 @@
+﻿STATUS: LEGACY / ESKI BACKEND
+
+Bu klasor aktif backend DEGILDIR.
+Yalnizca referans/arsiv amacli tutulur.
+
+AKTIF BACKEND:
+C:\Users\Hp\Desktop\PhpstormProjects\scout_api_pr_clean
+
+Not:
+Frontend ve yeni gelistirmeler aktif backend uzerinden devam etmelidir.
